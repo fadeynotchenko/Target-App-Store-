@@ -1,0 +1,17 @@
+"appname" = "My Piggy Bank";
+"archive" = "Archive";
+"select" = "Select a target from the list";
+"create" = "Create target";
+"empty" = "The list is empty";
+//create new target
+"new" = "New target";
+"close" = "Close";
+"namehint" = "Name of your target";
+"value" = "Change currency";
+"add" = "Add";
+"replenishment" = "Replenishment of the piggy bank";
+"never" = "Never";
+"once a" = "Once a";
+"repfooter" = "Add a daily, weekly, or monthly top-up";
+"addrep" = "Add replenishment";
+"replenishmenttitle" = "Replenishment";

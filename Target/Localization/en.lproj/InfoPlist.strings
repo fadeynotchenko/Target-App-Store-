@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Target app
+
+  Created by Fadey Notchenko on 13.08.2022.
+  
+*/
+
+"CFBundleDisplayName" = "My Piggy Bank";
+"CFBundleName" = "My Piggy Bank";

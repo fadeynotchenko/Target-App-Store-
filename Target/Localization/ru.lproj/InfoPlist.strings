@@ -1,0 +1,10 @@
+/* 
+  InfoPlist.strings
+  Target app
+
+  Created by Fadey Notchenko on 13.08.2022.
+  
+*/
+
+"CFBundleDisplayName" = "Моя Копилка";
+"CFBundleName" = "Моя Копилка";
