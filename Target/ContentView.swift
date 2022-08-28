@@ -15,21 +15,31 @@ struct ContentView: View {
     
     @State private var showNewTargetView = false
     
+    @State private var id: UUID?
+    
+    @EnvironmentObject var vm: ViewModel
+    
     var body: some View {
-        GeometryReader { reader in
             NavigationView {
-                List {
-                    archiveButton
+                ZStack {
+                    List {
+                        archiveButton
+                        
+                        ForEach(targets.filter({ $0.isFinished == false })) { target in
+                            TargetRow(target: target)
+                                .swipeActions {
+                                    deleteButton(target)
+                                }
+                            
+                        }
+                    }
                     
-                    ForEach(targets) { target in
-                        TargetRow(target: target, reader: reader)
-                            .swipeActions {
-                                deleteButton(target)
-                            }
+                    if targets.filter({ $0.isFinished == false }).isEmpty {
+                        Text("empty")
                     }
                 }
-                .currentListStyle()
-                .navigationTitle(Text("Моя Копилка"))
+                .listStyle(.automatic)
+                .navigationTitle(Text("appname"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
                 }
@@ -38,8 +48,10 @@ struct ContentView: View {
                         showNewTargetViewButton
                     }
                 }
+                
+                Text("placeholder")
             }
-        }
+        
     }
     
     private var showNewTargetViewButton: some View {
@@ -55,9 +67,15 @@ struct ContentView: View {
             //archive
         } label: {
             Label {
-                Text("Архив (\(targets.filter( { $0.isFinished }).count))")
-                    .bold()
-                    .foregroundColor(.gray)
+                HStack(spacing: 5) {
+                    Text("archive")
+                        .bold()
+                        .foregroundColor(.gray)
+                    
+                    Text("(\(targets.filter( { $0.isFinished }).count))")
+                        .bold()
+                        .foregroundColor(.gray)
+                }
             } icon: {
                 Image(systemName: "archivebox.fill")
                     .foregroundColor(.gray)
@@ -69,7 +87,7 @@ struct ContentView: View {
     
     private func deleteButton(_ target: Target) -> some View {
         Button(role: .destructive) {
-            withAnimation(.linear) {
+            withAnimation {
                 PersistenceController.deleteTarget(target: target, context: viewContext)
             }
         } label: {
@@ -80,33 +98,32 @@ struct ContentView: View {
 
 struct TargetRow: View {
     
-    var target: Target
-    var reader: GeometryProxy
+    @ObservedObject var target: Target
     
     @State private var percent: CGFloat = 0
     @State private var txtPercent = 0
     
     @Environment(\.managedObjectContext) private var viewContext
+    
     @EnvironmentObject var vm: ViewModel
     
     var body: some View {
-        //vm selection need only for iPad
         if Constants.IDIOM == .pad {
             NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
-                TargetDetailView(target: target, selected: $vm.id)
+                TargetDetailView(target: target)
             } label: {
-                targetBodyLabel
+                label
             }
         } else {
             NavigationLink {
-                TargetDetailView(target: target, selected: $vm.id)
+                TargetDetailView(target: target)
             } label: {
-                targetBodyLabel
+                label
             }
         }
     }
     
-    private var targetBodyLabel: some View {
+    private var label: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(target.name ?? "")
                 .bold()
@@ -115,11 +132,11 @@ struct TargetRow: View {
             capsuleProgress
             
             Text("\(target.current) / \(target.price) \(Constants.valueArray[Int(target.valueIndex)].symbol)")
-                .foregroundColor(.gray)
                 .bold()
             
         }
         .padding(.vertical)
+        .padding(.horizontal, Constants.IDIOM == .pad ? 10 : 0)
     }
     
     private var capsuleProgress: some View {
@@ -157,7 +174,7 @@ struct TargetRow: View {
         
         txtPercent = min(Int(current * 100 / price), 100)
         
-        withAnimation(.linear(duration: 1.0)) {
+        withAnimation(.easeInOut(duration: 1.0)) {
             percent = min(CGFloat(current * 100 / price), 100.0)
         }
     }
@@ -168,6 +185,7 @@ struct ContentView_Previews: PreviewProvider {
         ContentView()
             .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
             .environmentObject(ViewModel())
+            .colorScheme(.dark)
     }
 }
 
@@ -180,5 +198,21 @@ extension View {
         } else {
             self.listStyle(.sidebar)
         }
+    }
+    
+    @ViewBuilder
+    func currentNavigationStyle() -> some View {
+        if Constants.IDIOM == .pad {
+            self.navigationViewStyle(.automatic)
+        } else {
+            self.navigationViewStyle(.stack)
+        }
+    }
+}
+
+extension UINavigationController {
+    open override func viewWillLayoutSubviews() {
+        super.viewWillLayoutSubviews()
+        navigationBar.topItem?.backButtonDisplayMode = .minimal
     }
 }

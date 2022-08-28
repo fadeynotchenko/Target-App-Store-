@@ -1,8 +1,17 @@
+/* 
+  Localizable.strings
+  Target
+
+  Created by Fadey Notchenko on 28.08.2022.
+  
+*/
+
 "appname" = "Моя Копилка";
 "archive" = "Архив";
 "select" = "Выберите цель из списка";
 "create" = "Создайте цель";
 "empty" = "Список пуст";
+"placeholder" = "Выберете цель из списка";
 //create new target
 "new" = "Новая цель";
 "close" = "Закрыть";
@@ -16,3 +25,4 @@
 "repfooter" = "Добавить ежедневное, еженедельное или ежемесячное пополнение";
 "addrep" = "Добавить пополнение";
 "replenishmenttitle" = "Пополнение";
+

@@ -87,7 +87,7 @@ struct NewTargetView: View {
                 }
             }
             
-            FormatSumTextField(numberValue: $price, placeholder: region == "ru" ? "Цена в \(value.symbol)" : "Price in \(value.symbol)", numberFormatter: Constants.formatter(value: value))
+            FormatSumTextField(numberValue: $price, placeholder: region == "ru" ? "Цена в \(value.symbol)" : "Price in \(value.symbol)", numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: price, perform: { _ in
                     if Int(truncating: price ?? 0) > Constants.MAX {
@@ -95,7 +95,7 @@ struct NewTargetView: View {
                     }
                 })
             
-            FormatSumTextField(numberValue: $current, placeholder: region == "ru" ? "Уже накоплено (Необязательно)" : "Already accumulated (Optional)", numberFormatter: Constants.formatter(value: value))
+            FormatSumTextField(numberValue: $current, placeholder: region == "ru" ? "Уже накоплено (Необязательно)" : "Already accumulated (Optional)", numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: current, perform: { _ in
                     if Int(truncating: current ?? 0) > Int(truncating: price ?? 0) {
@@ -184,7 +184,7 @@ struct NewTargetView: View {
                 }
                 
                 Section {
-                    FormatSumTextField(numberValue: $replenishment, placeholder: "Число в \(value.symbol)", numberFormatter: Constants.formatter(value: value))
+                    FormatSumTextField(numberValue: $replenishment, placeholder: "Число в \(value.symbol)", numberFormatter: Constants.formatter())
                         .keyboardType(.numberPad)
                 } header: {
                     Text("sum")
@@ -192,7 +192,7 @@ struct NewTargetView: View {
                 
             }
         }
-        .navigationTitle(Text("replenishment"))
+        .navigationTitle(Text("replenishmenttitle"))
     }
 }
 

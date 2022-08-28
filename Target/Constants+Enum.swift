@@ -21,7 +21,7 @@ class Constants {
         }
     }
     
-    static func formatter(value: Value) -> NumberFormatter {
+    static func formatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = .current

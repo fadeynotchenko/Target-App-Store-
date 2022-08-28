@@ -10,11 +10,12 @@ import SwiftUI
 struct TargetDetailView: View {
     
     @ObservedObject var target: Target
-    @Binding var selected: UUID?
     
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.managedObjectContext) var viewContext
     @Environment(\.presentationMode) var presentation
+    
+    @EnvironmentObject var vm: ViewModel
     
     @State private var showActionView = false
     @State private var showEditView = false
@@ -24,6 +25,8 @@ struct TargetDetailView: View {
     @State private var selection = 0
     
     @State private var sortSelection = 0
+    
+    @State private var circleWidth: CGFloat = 0
     
     private var actionArray: [Action] {
         switch sortSelection {
@@ -53,35 +56,59 @@ struct TargetDetailView: View {
         String(Locale.preferredLanguages[0].prefix(2))
     }
     
+    private var showPlaceholder: Bool {
+        Constants.IDIOM == .pad && vm.id == nil
+    }
+    
     var body: some View {
-        if Constants.IDIOM == .pad && selected == nil {
+        if showPlaceholder {
             Text("Placeholder")
         } else {
             GeometryReader { reader in
                 ScrollView {
-                    VStack(spacing: 30) {
-                        circleProgressWithActionButtons(reader: reader)
-                            .frame(minWidth: 300)
-                            .frame(width: reader.size.width / 2)
+                    VStack(spacing: Constants.IDIOM == .pad ? 50 : 30) {
+                        circleProgressWithActionButtons(reader)
                             .padding(.top)
                         
+                        Text("\(target.current) / \(target.price) \(symbol)")
+                            .bold()
+                            .font(.title2)
                     }
-                    .frame(width: reader.size.width)
+                    
                 }
-                .frame(width: reader.size.width)
                 .navigationTitle(Text(target.name ?? ""))
+                .sheet(isPresented: $showEditView) {
+                    TargetEditView(showEditView: $showEditView, target: target)
+                }
+                .sheet(isPresented: $showActionView) {
+                    TargetActionView(showActionView: $showActionView, selection: selection, target: target)
+                }
+                .fullScreenCover(isPresented: $showFinishView) {
+                    TargetFinishView(target: target, showFinishView: $showFinishView)
+                }
+                .toolbar {
+                    ToolbarItem {
+                        if !showPlaceholder {
+                            Button("Изменить") {
+                                showEditView = true
+                            }
+                        }
+                    }
+                }
             }
         }
     }
     
-    private func circleProgressWithActionButtons(reader: GeometryProxy) -> some View {
-        HStack(spacing: 0) {
+    private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
+        HStack(spacing: Constants.IDIOM == .pad ? 40 : 0) {
             Spacer()
             
             sideButton(systemName: "minus") {
                 selection = 0
                 showActionView = true
             }
+            
+            if Constants.IDIOM == .phone { Spacer() }
             
             ZStack(alignment: .center) {
                 ZStack {
@@ -94,10 +121,8 @@ struct TargetDetailView: View {
                         .stroke(style: StrokeStyle(lineWidth: 16, lineCap: .round, lineJoin: .round))
                         .fill(LinearGradient(colors: [color, .purple], startPoint: .leading, endPoint: .trailing))
                         .rotationEffect(Angle(degrees: 270))
-                    
                 }
-                .frame(minWidth: 150, maxWidth: 280, minHeight: 150, maxHeight: 280)
-                .frame(width: Constants.IDIOM == .pad ? reader.size.width / 4 : reader.size.width / 1.9, height: Constants.IDIOM == .pad ? reader.size.width / 4 : reader.size.width / 1.9)
+                .frame(width: circleWidth, height: circleWidth)
                 .onChange(of: target.current) { newCurrent in
                     calculateProgress(target.price, newCurrent)
                 }
@@ -113,6 +138,15 @@ struct TargetDetailView: View {
                     .font(.title)
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
+            .frame(width: circleWidth, height: circleWidth)
+            .onAppear {
+                circleWidth = calculateCircleWidth(reader)
+            }
+            .onChange(of: reader.size.width) { new in
+                circleWidth = calculateCircleWidth(reader)
+            }
+            
+            if Constants.IDIOM == .phone { Spacer() }
             
             sideButton(systemName: "plus") {
                 selection = 1
@@ -121,6 +155,7 @@ struct TargetDetailView: View {
             
             Spacer()
         }
+        
     }
     
     private func sideButton(systemName: String, action: @escaping () -> ()) -> some View {
@@ -147,8 +182,21 @@ struct TargetDetailView: View {
     private func checkFinish(_ price: Int64, _ current: Int64) {
         if current >= price {
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                showFinishView.toggle()
+                showFinishView = true
             }
         }
+    }
+    
+    private func calculateCircleWidth(_ reader: GeometryProxy) -> CGFloat {
+        if Constants.IDIOM == .pad {
+            switch reader.size.width {
+            case 0..<400: return 150
+            case 400..<1000: return 220
+            default:
+                return 300
+            }
+        }
+        
+        return 200
     }
 }

@@ -1,8 +1,16 @@
+/* 
+  Localizable.strings
+  Target
+
+  Created by Fadey Notchenko on 28.08.2022.
+  
+*/
 "appname" = "My Piggy Bank";
 "archive" = "Archive";
 "select" = "Select a target from the list";
 "create" = "Create target";
 "empty" = "The list is empty";
+"placeholder" = "Select a target from the list";
 //create new target
 "new" = "New target";
 "close" = "Close";
