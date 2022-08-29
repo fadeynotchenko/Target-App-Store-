@@ -64,23 +64,21 @@ struct ContentView: View {
     
     private var archiveButton: some View {
         NavigationLink {
-            //archive
+            ArchiveTargetsView()
         } label: {
             Label {
                 HStack(spacing: 5) {
                     Text("archive")
                         .bold()
-                        .foregroundColor(.gray)
                     
                     Text("(\(targets.filter( { $0.isFinished }).count))")
                         .bold()
-                        .foregroundColor(.gray)
                 }
             } icon: {
                 Image(systemName: "archivebox.fill")
-                    .foregroundColor(.gray)
             }
             .font(.title3)
+            .foregroundColor(.gray)
             .padding(.vertical)
         }
     }
@@ -129,10 +127,15 @@ struct TargetRow: View {
                 .bold()
                 .font(.title3)
             
-            capsuleProgress
+            if target.isFinished {
+                capsuleFinish
+            } else {
+                capsuleProgress
+            }
             
             Text("\(target.current) / \(target.price) \(Constants.valueArray[Int(target.valueIndex)].symbol)")
                 .bold()
+                .foregroundColor(.gray)
             
         }
         .padding(.vertical)
@@ -166,6 +169,27 @@ struct TargetRow: View {
         }
         .onChange(of: target.price) { new in
             calculatePercent(price: new, current: target.current)
+        }
+    }
+    
+    private var capsuleFinish: some View {
+        ZStack(alignment: .leading) {
+            
+            ZStack(alignment: .trailing) {
+                HStack {
+                    Capsule()
+                        .fill(.gray.opacity(0.1))
+                        .frame(width: Constants.IDIOM == .pad ? 150 : 200, height: 12)
+                    
+                    Text("100 %")
+                        .foregroundColor(.gray)
+                        .bold()
+                }
+            }
+            
+            Capsule()
+                .fill(LinearGradient(colors: [.purple, Constants.colorArray[Int(target.colorIndex)]], startPoint: .leading, endPoint: .trailing))
+                .frame(width: (Constants.IDIOM == .pad ? 150 : 200), height: 12)
         }
     }
     

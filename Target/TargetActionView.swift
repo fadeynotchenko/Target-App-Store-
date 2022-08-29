@@ -11,7 +11,7 @@ import AnyFormatKitSwiftUI
 struct TargetActionView: View {
     
     @Binding var showActionView: Bool
-    var selection: Int
+    @Binding var selection: Int
     var target: Target
     
     @State private var plusCurrent: NSNumber?
@@ -61,6 +61,7 @@ struct TargetActionView: View {
                 
             }
             .navigationTitle(selection == 0 ? Text(titles[0]) : Text(titles[1]))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("close") {

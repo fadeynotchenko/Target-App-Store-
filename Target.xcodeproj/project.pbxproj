@@ -13,6 +13,7 @@
 		4311B4B428B95CB4000DF42A /* AnyFormatKitSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 4311B4B328B95CB4000DF42A /* AnyFormatKitSwiftUI */; };
 		4311B4BD28B966E5000DF42A /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 4311B4B828B966E5000DF42A /* InfoPlist.strings */; };
 		4311B4BF28B9674D000DF42A /* TargetDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4311B4BE28B9674D000DF42A /* TargetDetailView.swift */; };
+		43549E3628BCFA43006481DD /* ArchiveTargetsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43549E3528BCFA43006481DD /* ArchiveTargetsView.swift */; };
 		43971BBE28B924DF00B1E692 /* TargetApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43971BBD28B924DF00B1E692 /* TargetApp.swift */; };
 		43971BC028B924DF00B1E692 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 43971BBF28B924DF00B1E692 /* ContentView.swift */; };
 		43971BC228B924E000B1E692 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 43971BC128B924E000B1E692 /* Assets.xcassets */; };
@@ -34,6 +35,7 @@
 		4311B4B928B966E5000DF42A /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4311B4BB28B966E5000DF42A /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		4311B4BE28B9674D000DF42A /* TargetDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetDetailView.swift; sourceTree = "<group>"; };
+		43549E3528BCFA43006481DD /* ArchiveTargetsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ArchiveTargetsView.swift; sourceTree = "<group>"; };
 		43971BBA28B924DF00B1E692 /* Target.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Target.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		43971BBD28B924DF00B1E692 /* TargetApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TargetApp.swift; sourceTree = "<group>"; };
 		43971BBF28B924DF00B1E692 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -97,6 +99,7 @@
 				43A68FAB28BAB3F000B0A7C7 /* TargetEditView.swift */,
 				43A68FAD28BAB9AD00B0A7C7 /* TargetFinishView.swift */,
 				43D8799A28BAC77800CDE106 /* TargetActionView.swift */,
+				43549E3528BCFA43006481DD /* ArchiveTargetsView.swift */,
 				43971BC128B924E000B1E692 /* Assets.xcassets */,
 				43971BCB28B9259400B1E692 /* Core Data */,
 				4311B4A328B92877000DF42A /* Constants+Enum.swift */,
@@ -214,6 +217,7 @@
 				4311B4A428B92877000DF42A /* Constants+Enum.swift in Sources */,
 				43A68FAC28BAB3F000B0A7C7 /* TargetEditView.swift in Sources */,
 				4311B4BF28B9674D000DF42A /* TargetDetailView.swift in Sources */,
+				43549E3628BCFA43006481DD /* ArchiveTargetsView.swift in Sources */,
 				43971BD428B925F800B1E692 /* Target+CoreDataProperties.swift in Sources */,
 				4311B4AF28B9579B000DF42A /* ViewModel.swift in Sources */,
 				43971BBE28B924DF00B1E692 /* TargetApp.swift in Sources */,

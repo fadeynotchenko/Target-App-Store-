@@ -66,32 +66,49 @@ struct TargetDetailView: View {
         } else {
             GeometryReader { reader in
                 ScrollView {
-                    VStack(spacing: Constants.IDIOM == .pad ? 50 : 30) {
-                        circleProgressWithActionButtons(reader)
-                            .padding(.top)
+                    VStack(alignment: .center, spacing: Constants.IDIOM == .pad ? 30 : 30) {
+                        if target.isFinished {
+                            finishCircle(reader)
+                        } else {
+                            circleProgressWithActionButtons(reader)
+                                .padding(.top)
+                        }
                         
                         Text("\(target.current) / \(target.price) \(symbol)")
                             .bold()
                             .font(.title2)
-                    }
-                    
-                }
-                .navigationTitle(Text(target.name ?? ""))
-                .sheet(isPresented: $showEditView) {
-                    TargetEditView(showEditView: $showEditView, target: target)
-                }
-                .sheet(isPresented: $showActionView) {
-                    TargetActionView(showActionView: $showActionView, selection: selection, target: target)
-                }
-                .fullScreenCover(isPresented: $showFinishView) {
-                    TargetFinishView(target: target, showFinishView: $showFinishView)
-                }
-                .toolbar {
-                    ToolbarItem {
-                        if !showPlaceholder {
-                            Button("Изменить") {
-                                showEditView = true
+                            .padding(.top)
+                        
+                        if !target.isFinished {
+                            DetailView(title1: "Осталось:", subtitle1: "\(target.price - target.current) \(symbol)", title2: "Копите:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color)
+                        }
+                        
+                        Text("История операций:")
+                            .foregroundColor(.gray)
+                        
+                        LazyVStack(spacing: 30) {
+                            ForEach(actionArray) { action in
+                                actionRow(action: action)
                             }
+                        }
+                    }
+                }
+            }
+            .navigationTitle(Text(target.name ?? ""))
+            .sheet(isPresented: $showEditView) {
+                TargetEditView(showEditView: $showEditView, target: target)
+            }
+            .sheet(isPresented: $showActionView) {
+                TargetActionView(showActionView: $showActionView, selection: $selection, target: target)
+            }
+            .fullScreenCover(isPresented: $showFinishView) {
+                TargetFinishView(target: target, showFinishView: $showFinishView)
+            }
+            .toolbar {
+                ToolbarItem {
+                    if !showPlaceholder && !target.isFinished {
+                        Button("Изменить") {
+                            showEditView = true
                         }
                     }
                 }
@@ -99,16 +116,82 @@ struct TargetDetailView: View {
         }
     }
     
+    @ViewBuilder
+    private func actionRow(action: Action) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 5) {
+                if action.value < 0 {
+                    Image(systemName: "arrow.down")
+                        .foregroundColor(.red)
+                } else {
+                    Image(systemName: "arrow.up")
+                        .foregroundColor(.green)
+                }
+                
+                Text(action.value < 0 ? "\(action.value) \(symbol)" : "+\(action.value) \(symbol)")
+                    .bold()
+                    .font(.title3)
+                    .foregroundColor(action.value < 0 ? .red : .green)
+                
+                Spacer()
+                
+                Text(action.date ?? Date(), format: .dateTime.day().month().year())
+                    .foregroundColor(.gray)
+            }
+            
+            if let comment = action.comment, !comment.isEmpty {
+                Text(comment)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+        .background(Color("Color"))
+        .cornerRadius(15)
+        .frame(width: (circleWidth == 150 || Constants.IDIOM == .phone) ? 330 : 450)
+    }
+    
+    private func finishCircle(_ reader: GeometryProxy) -> some View {
+            ZStack(alignment: .center) {
+                ZStack {
+                    Circle()
+                        .stroke(lineWidth: 16)
+                        .foregroundColor(Color("Color"))
+                    
+                    Circle()
+                        .trim(from: 0.0, to: 1.0)
+                        .stroke(style: StrokeStyle(lineWidth: 16, lineCap: .round, lineJoin: .round))
+                        .fill(LinearGradient(colors: [color, .purple], startPoint: .leading, endPoint: .trailing))
+                        .rotationEffect(Angle(degrees: 270))
+                }
+                
+                Text("100 %")
+                    .bold()
+                    .font(.title)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            }
+            .frame(width: circleWidth, height: circleWidth)
+            .padding(.horizontal)
+            .onAppear {
+                circleWidth = calculateCircleWidth(reader)
+            }
+            .onChange(of: reader.size.width) { new in
+                circleWidth = calculateCircleWidth(reader)
+            }
+    }
+    
     private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
-        HStack(spacing: Constants.IDIOM == .pad ? 40 : 0) {
-            Spacer()
+        HStack(spacing: 0) {
+            ForEach(0..<(Constants.IDIOM == .pad ? 3 : 1), id: \.self) { _ in
+                Spacer()
+            }
             
             sideButton(systemName: "minus") {
                 selection = 0
                 showActionView = true
             }
             
-            if Constants.IDIOM == .phone { Spacer() }
+            Spacer()
             
             ZStack(alignment: .center) {
                 ZStack {
@@ -122,7 +205,6 @@ struct TargetDetailView: View {
                         .fill(LinearGradient(colors: [color, .purple], startPoint: .leading, endPoint: .trailing))
                         .rotationEffect(Angle(degrees: 270))
                 }
-                .frame(width: circleWidth, height: circleWidth)
                 .onChange(of: target.current) { newCurrent in
                     calculateProgress(target.price, newCurrent)
                 }
@@ -139,6 +221,7 @@ struct TargetDetailView: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .frame(width: circleWidth, height: circleWidth)
+            .padding(.horizontal)
             .onAppear {
                 circleWidth = calculateCircleWidth(reader)
             }
@@ -146,14 +229,16 @@ struct TargetDetailView: View {
                 circleWidth = calculateCircleWidth(reader)
             }
             
-            if Constants.IDIOM == .phone { Spacer() }
+            Spacer()
             
             sideButton(systemName: "plus") {
                 selection = 1
                 showActionView = true
             }
             
-            Spacer()
+            ForEach(0..<(Constants.IDIOM == .pad ? 3 : 1), id: \.self) { _ in
+                Spacer()
+            }
         }
         
     }
@@ -193,10 +278,51 @@ struct TargetDetailView: View {
             case 0..<400: return 150
             case 400..<1000: return 220
             default:
-                return 300
+                return 260
             }
         }
         
-        return 200
+        return reader.size.width / 1.9
+    }
+}
+
+struct DetailView: View {
+    
+    var title1: String
+    var subtitle1: String
+    var title2: String
+    var subtitle2: String
+    var color: Color
+    
+    var body: some View {
+        HStack(spacing: 0) {
+            VStack(spacing: 5) {
+                Text(title1)
+                    .foregroundColor(.gray)
+                
+                Text(subtitle1)
+                    .font(.title3)
+                    .bold()
+                    .gradientForeground(colors: [color, .purple])
+            }
+            .padding(.leading, 25)
+            
+            Spacer()
+            
+            VStack(spacing: 5) {
+                Text(title2)
+                    .foregroundColor(.gray)
+                
+                Text(subtitle2)
+                    .font(.title3)
+                    .bold()
+                    .gradientForeground(colors: [color, .purple])
+            }
+            .padding(.trailing, 25)
+        }
+        .padding()
+        .frame(width: 330)
+        .background(Color("Color"))
+        .cornerRadius(15)
     }
 }

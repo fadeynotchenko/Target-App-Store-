@@ -23,3 +23,5 @@
 "repfooter" = "Add a daily, weekly, or monthly top-up";
 "addrep" = "Add replenishment";
 "replenishmenttitle" = "Replenishment";
+"color" = "Сolor of progress";
+"archiveempty" = "Archive is empty";

@@ -37,8 +37,6 @@ struct TargetEditView: View {
                             .onAppear {
                                 newName = target.name ?? ""
                             }
-                    } header: {
-                        Text("Название")
                     }
                     
                     Section {
@@ -47,11 +45,7 @@ struct TargetEditView: View {
                             .onAppear {
                                 newPrice = (target.price) as NSNumber
                             }
-                    } header: {
-                        Text("Цена")
                     }
-                    
-                    
                     
                     LazyColorHStack(tagIndex: $newTagIndex)
                         .onAppear {
@@ -70,16 +64,16 @@ struct TargetEditView: View {
                         } label: {
                             Text("Удалить цель")
                                 .foregroundColor(.red)
-                                .bold()
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
+            .navigationTitle(Text("Изменить цель"))
+            .navigationBarTitleDisplayMode(.inline)
             .fullScreenCover(isPresented: $backToMainView) {
                 ContentView()
             }
-            .navigationTitle(Text("Изменить цель"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("close") {

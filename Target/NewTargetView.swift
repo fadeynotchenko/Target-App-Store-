@@ -46,6 +46,7 @@ struct NewTargetView: View {
                 LazyColorHStack(tagIndex: $colorIndex)
             }
             .navigationTitle(Text("new"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("close") {
@@ -107,32 +108,30 @@ struct NewTargetView: View {
     }
     
     private var addGoalButton: some View {
-        Section {
-            Button("add") {
-                showNewTargetView.toggle()
+        Button("add") {
+            showNewTargetView.toggle()
+            
+            let target = Target(context: managedObjectContext)
+            target.id = UUID()
+            target.name = name
+            target.price = price as! Int64
+            target.current = Int64(truncating: current ?? 0)
+            target.colorIndex = Int16(colorIndex)
+            target.valueIndex = Int16(valueIndex)
+            target.date = Date()
+            
+            if let replenishment = replenishment {
+                target.replenishment = Int64(truncating: replenishment)
+                target.timeIndex = Int16(timeIndex)
                 
-                let target = Target(context: managedObjectContext)
-                target.id = UUID()
-                target.name = name
-                target.price = price as! Int64
-                target.current = Int64(truncating: current ?? 0)
-                target.colorIndex = Int16(colorIndex)
-                target.valueIndex = Int16(valueIndex)
-                target.date = Date()
-                
-                if let replenishment = replenishment {
-                    target.replenishment = Int64(truncating: replenishment)
-                    target.timeIndex = Int16(timeIndex)
-                    
-                    let dateComponents = Constants.globalFunc.nextRep(selection: timeIndex)
-                    target.dateNext = Calendar.current.date(from: dateComponents)
-                }
-                
-                PersistenceController.save(target: target, context: managedObjectContext)
+                let dateComponents = Constants.globalFunc.nextRep(selection: timeIndex)
+                target.dateNext = Calendar.current.date(from: dateComponents)
             }
-            .disabled(name.isEmpty)
-            .disabled(price == nil)
+            
+            PersistenceController.save(target: target, context: managedObjectContext)
         }
+        .disabled(name.isEmpty)
+        .disabled(price == nil)
     }
     
     private var addReplenishmentSection: some View {
@@ -150,7 +149,7 @@ struct NewTargetView: View {
                         }
                         
                         Text(addReplenishment ? Constants.timeEnumArray[timeIndex].key : "never")
-                        .foregroundColor(.gray)
+                            .foregroundColor(.gray)
                     }
                 }
                 .padding(.vertical, 5)
@@ -223,8 +222,8 @@ struct LazyColorHStack: View {
                     }
                 }
             }
-        } header: {
-            Text("tags")
+        } footer: {
+            Text("color")
         }
     }
 }
