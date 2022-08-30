@@ -75,9 +75,9 @@ struct TargetDetailView: View {
                             .font(.title2)
                             .padding(.top)
                         
-                        DetailView(title1: "Осталось:", subtitle1: Int(target.price - target.current), title2: "Копите:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
+                        DetailView(title1: "left", subtitle1: Int(target.price - target.current), title2: "gone", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
                         
-                        Text("История операций:")
+                        Text("history")
                             .foregroundColor(.gray)
                         
                         LazyVStack(spacing: 30) {
@@ -101,7 +101,7 @@ struct TargetDetailView: View {
             .toolbar {
                 ToolbarItem {
                     if !showPlaceholder {
-                        Button("Изменить") {
+                        Button("edit") {
                             showEditView = true
                         }
                         .disabled(target.price == target.current)
@@ -256,9 +256,9 @@ struct TargetDetailView: View {
 
 struct DetailView: View {
     
-    var title1: String
+    var title1: LocalizedStringKey
     var subtitle1: Int
-    var title2: String
+    var title2: LocalizedStringKey
     var subtitle2: String
     var color: Color
     var symbol: String

@@ -20,7 +20,7 @@ struct TargetActionView: View {
     @State private var date = Date()
     @State private var comment = ""
     
-    private let titles = ["Вычесть", "Добавить"]
+    private let titles: [LocalizedStringKey] = ["mstitle", "pltitle"]
     
     @Environment(\.managedObjectContext) var managedObjectContext
     
@@ -28,7 +28,7 @@ struct TargetActionView: View {
         NavigationView {
             Form {
                 Section {
-                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? "Какую сумму достать из копилки?" : "Какую сумму положить в копилку?", numberFormatter: Constants.formatter())
+                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? String(format: NSLocalizedString("minus", comment: "")) : String(format: NSLocalizedString("plus", comment: "")), numberFormatter: Constants.formatter())
                         .keyboardType(.numberPad)
                         .onChange(of: minusCurrent, perform: { _ in
                             if Int64(truncating: minusCurrent ?? 0) > target.current {
@@ -41,15 +41,15 @@ struct TargetActionView: View {
                             }
                         })
                 } footer: {
-                    Text(selection == 0 ? "Максимум: \(target.current)" : "Максимум: \(target.price - target.current)")
+                    Text(selection == 0 ? "Max: \(target.current)" : "Max: \(target.price - target.current)")
                 }
                 
                 Section {
-                    TextField("Комментарий:", text: $comment)
+                    TextField("comment", text: $comment)
                 }
-                
+            
                 Section {
-                    Toggle("Дата", isOn: $dateIsOn)
+                    Toggle("date", isOn: $dateIsOn)
                     
                     if dateIsOn {
                         DatePicker("", selection: $date, displayedComponents: .date)
@@ -113,7 +113,7 @@ struct TargetActionView: View {
             
             
         } label: {
-            Text("Сохранить")
+            Text("save")
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .disabled(selection == 0 && minusCurrent == nil ? true : false)

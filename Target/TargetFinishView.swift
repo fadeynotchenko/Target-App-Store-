@@ -12,22 +12,20 @@ struct TargetFinishView: View {
     let target: Target
     @Binding var showFinishView: Bool
     
-    @Environment(\.presentationMode) var presentation
+    @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) var viewContext
     
     @EnvironmentObject var vm: ViewModel
-    
-    @State private var backToMainView = false
     
     var body: some View {
         NavigationView {
             VStack(spacing: 15) {
                 
-                Text("Поздравляем!")
+                Text("congratulations")
                     .bold()
                     .font(.largeTitle)
                 
-                Text("Ваша цель достигнута - ")
+                Text("finish")
                     .bold()
                     .font(.title2)
                     .frame(maxWidth: 350)
@@ -39,11 +37,11 @@ struct TargetFinishView: View {
                     .font(.largeTitle)
                     .gradientForeground(colors: [Constants.colorArray[Int(target.colorIndex)], .purple])
                 
-                DetailView(title1: "Накопленно:", subtitle1: Int(target.price), title2: "Понадобилось:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
+                DetailView(title1: "accumulated", subtitle1: Int(target.price), title2: "per", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
                 
                 Spacer()
                 
-                Text("Посмотреть весь прогресс можно в разделе 'Архив'")
+                Text("hint")
                     .frame(width: 300)
                     .multilineTextAlignment(.center)
                     .foregroundColor(.gray)
@@ -51,9 +49,9 @@ struct TargetFinishView: View {
             }
             .toolbar {
                 ToolbarItem {
-                    Button("Закрыть") {
+                    Button("close") {
                         if Constants.IDIOM == .phone {
-                            backToMainView = true
+                            dismiss()
                         } else {
                             vm.id = nil
                         }
@@ -63,9 +61,6 @@ struct TargetFinishView: View {
                         PersistenceController.save(target: target, context: viewContext)
                     }
                 }
-            }
-            .fullScreenCover(isPresented: $backToMainView) {
-                ContentView()
             }
         }
     }

@@ -41,7 +41,7 @@ struct NewTargetView: View {
                 
                 priceSection
                 
-                addReplenishmentSection
+                //addReplenishmentSection
                 
                 LazyColorHStack(tagIndex: $colorIndex)
             }

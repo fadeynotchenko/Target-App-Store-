@@ -20,7 +20,7 @@
           "locale" : "ru"
         }
       ],
-      "productID" : "VN.Target.full-version-2",
+      "productID" : "VN.Target.fullversion",
       "referenceName" : "Full version",
       "type" : "NonConsumable"
     }

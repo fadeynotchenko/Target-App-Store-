@@ -15,7 +15,7 @@ class ViewModel: ObservableObject {
     
     func fetchProducts() async {
         do {
-            let products = try await Product.products(for: ["VN.Target.full-version-2"])
+            let products = try await Product.products(for: ["VN.Target.fullversion"])
             DispatchQueue.main.async {
                 self.products = products
             }

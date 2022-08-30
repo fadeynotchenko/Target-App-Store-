@@ -30,7 +30,7 @@ struct TargetEditView: View {
             VStack {
                 Form {
                     Section {
-                        TextField("Новое название", text: $newName)
+                        TextField("newname", text: $newName)
                             .onChange(of: newName, perform: {
                                 newName = String($0.prefix(30))
                             })
@@ -40,7 +40,7 @@ struct TargetEditView: View {
                     }
                     
                     Section {
-                        FormatSumTextField(numberValue: $newPrice, placeholder: "Новая цена", numberFormatter: Constants.formatter())
+                        FormatSumTextField(numberValue: $newPrice, placeholder: "newprice", numberFormatter: Constants.formatter())
                             .keyboardType(.numberPad)
                             .onAppear {
                                 newPrice = (target.price) as NSNumber
@@ -62,14 +62,14 @@ struct TargetEditView: View {
                                 PersistenceController.deleteTarget(target: target, context: managedObjectContext)
                             }
                         } label: {
-                            Text("Удалить цель")
+                            Text("delete")
                                 .foregroundColor(.red)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
-            .navigationTitle(Text("Изменить цель"))
+            .navigationTitle(Text("edit"))
             .navigationBarTitleDisplayMode(.inline)
             .fullScreenCover(isPresented: $backToMainView) {
                 ContentView()
@@ -92,7 +92,7 @@ struct TargetEditView: View {
                         
                         
                     } label: {
-                        Text("Сохранить")
+                        Text("save")
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .disabled(newName.isEmpty || newPrice == nil)

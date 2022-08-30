@@ -20,7 +20,7 @@ struct ContentView: View {
     
     @State private var id: UUID?
     
-    @AppStorage("VN.Target.full-version-2") var fullVersion = false
+    @AppStorage("VN.Target.fullversion") var fullVersion = false
     
     @EnvironmentObject var vm: ViewModel
     
@@ -35,7 +35,6 @@ struct ContentView: View {
                                 .swipeActions {
                                     deleteButton(target)
                                 }
-                            
                         }
                     }
                     .listStyle(.inset)
@@ -115,7 +114,7 @@ struct ProVersion: View {
     @EnvironmentObject var vm: ViewModel
     @Environment(\.dismiss) var dismiss
     
-    @AppStorage("VN.Target.full-version-2") var fullVersion = false
+    @AppStorage("VN.Target.fullversion") var fullVersion = false
     
     var body: some View {
         NavigationView {

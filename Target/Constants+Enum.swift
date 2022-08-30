@@ -13,7 +13,11 @@ class Constants {
     static let timeArray: [LocalizedStringKey] = ["day", "week", "month"]
     static let valueArray: [Value] = [.rub, .usd, .eur]
     
-    static var colorArray: [Color] = [.red, .pink, .orange, .blue, .cyan, .mint, .teal, .cyan, .mint, .teal]
+    static var region: String {
+        String(Locale.preferredLanguages[0].prefix(2))
+    }
+    
+    static var colorArray: [Color] = [.red, .pink, .orange, .blue, .cyan, .mint, .teal]
     
     static func formatter() -> NumberFormatter {
         let formatter = NumberFormatter()
@@ -39,11 +43,18 @@ class Constants {
             let components = calendar.dateComponents([.day], from: date1, to: date2)
             var str = "\(components.day ?? 0)"
             
-            switch (components.day ?? 0) % 100 {
-            case 11...19: str += " дней"
-            case 1: str += " день"
-            case 2...4: str += " дня"
-            default: str += " дней"
+            if Constants.region == "ru" {
+                switch (components.day ?? 0) % 100 {
+                case 11...19: str += " дней"
+                case 1: str += " день"
+                case 2...4: str += " дня"
+                default: str += " дней"
+                }
+            } else {
+                switch (components.day ?? 0) {
+                case 1: str += " day"
+                default: str += " days"
+                }
             }
             
             return str

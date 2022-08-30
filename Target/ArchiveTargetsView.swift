@@ -32,16 +32,13 @@ struct ArchiveTargetsView: View {
     }
     
     private func archiveRow(_ target: Target) -> some View {
-        NavigationLink {
-            archiveDetail(target)
-        } label: {
             VStack(alignment: .leading, spacing: 10) {
                 Text(target.name ?? "")
                     .bold()
                     .font(.title3)
                 
                 HStack(spacing: 5) {
-                    Text("Накопленно:")
+                    Text("accumulated")
                         .foregroundColor(.gray)
                     
                     Text("\(target.current) \(getSymbol(target))")
@@ -50,7 +47,7 @@ struct ArchiveTargetsView: View {
                 }
                 
                 HStack(spacing: 5) {
-                    Text("Накопили за:")
+                    Text("per")
                         .foregroundColor(.gray)
                     
                     Text(Constants.globalFunc.calculateDate(date: target.date ?? Date()))
@@ -59,7 +56,7 @@ struct ArchiveTargetsView: View {
                 }
                 
                 HStack(spacing: 5) {
-                    Text("Дата создания:")
+                    Text("date2")
                         .foregroundColor(.gray)
                     
                     Text(target.date ?? Date(), format: .dateTime.day().month().year())
@@ -68,45 +65,5 @@ struct ArchiveTargetsView: View {
                 }
             }
             .padding()
-        }
-    }
-    
-    private func archiveDetail(_ target: Target) -> some View {
-        ZStack {
-        List {
-            ForEach(target.actionArrayByDate) { action in
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack(spacing: 5) {
-                        if action.value < 0 {
-                            Image(systemName: "arrow.down")
-                                .foregroundColor(.red)
-                        } else {
-                            Image(systemName: "arrow.up")
-                                .foregroundColor(.green)
-                        }
-                        
-                        Text(action.value < 0 ? "\(action.value) \(getSymbol(target))" : "+\(action.value) \(getSymbol(target))")
-                            .bold()
-                            .font(.title3)
-                            .foregroundColor(action.value < 0 ? .red : .green)
-                        
-                        Spacer()
-                        
-                        Text(action.date ?? Date(), format: .dateTime.day().month().year())
-                            .foregroundColor(.gray)
-                    }
-                    
-                    if let comment = action.comment, !comment.isEmpty {
-                        Text(comment)
-                            .multilineTextAlignment(.leading)
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding()
-                .background(Color("Color"))
-                .cornerRadius(15)
-            }
-        }
-        }
     }
 }
