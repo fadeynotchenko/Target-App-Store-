@@ -39,7 +39,7 @@ struct TargetFinishView: View {
                     .font(.largeTitle)
                     .gradientForeground(colors: [Constants.colorArray[Int(target.colorIndex)], .purple])
                 
-                DetailView(title1: "Накопленно:", subtitle1: "\(target.price) \(Constants.valueArray[Int(target.valueIndex)].symbol)", title2: "Понадобилось:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)])
+                DetailView(title1: "Накопленно:", subtitle1: Int(target.price), title2: "Понадобилось:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
                 
                 Spacer()
                 
@@ -59,6 +59,8 @@ struct TargetFinishView: View {
                         }
                         
                         target.isFinished = true
+                        
+                        PersistenceController.save(target: target, context: viewContext)
                     }
                 }
             }

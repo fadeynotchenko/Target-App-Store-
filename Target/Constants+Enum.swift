@@ -13,19 +13,12 @@ class Constants {
     static let timeArray: [LocalizedStringKey] = ["day", "week", "month"]
     static let valueArray: [Value] = [.rub, .usd, .eur]
     
-    static var colorArray: [Color] {
-        if #available(iOS 15.0, *) {
-            return [.red, .pink, .orange, .green, .blue, .cyan, .mint, .teal]
-        } else {
-            return [.red, .pink, .orange, .green, .blue]
-        }
-    }
+    static var colorArray: [Color] = [.red, .pink, .orange, .blue, .cyan, .mint, .teal, .cyan, .mint, .teal]
     
     static func formatter() -> NumberFormatter {
         let formatter = NumberFormatter()
         formatter.numberStyle = .decimal
         formatter.locale = .current
-        formatter.currencySymbol = "USD"
             
         return formatter
     }

@@ -140,7 +140,7 @@ struct NewTargetView: View {
                 addReplenishmentView
             } label: {
                 VStack(alignment: .leading) {
-                    Text("replenishment")
+                    Text("reminders")
                     
                     HStack(spacing: 5) {
                         if addReplenishment {
@@ -161,7 +161,7 @@ struct NewTargetView: View {
         Form {
             Section {
                 Toggle(isOn: $addReplenishment) {
-                    Text("addrep")
+                    Text("addrem")
                 }
                 .onChange(of: addReplenishment) { toggle in
                     if toggle {
@@ -179,19 +179,17 @@ struct NewTargetView: View {
                     }
                     .pickerStyle(.segmented)
                 } header: {
-                    Text("in")
+                    Text("once a")
                 }
                 
                 Section {
                     FormatSumTextField(numberValue: $replenishment, placeholder: "Число в \(value.symbol)", numberFormatter: Constants.formatter())
                         .keyboardType(.numberPad)
-                } header: {
-                    Text("sum")
                 }
                 
             }
         }
-        .navigationTitle(Text("replenishmenttitle"))
+        .navigationTitle(Text("reminders"))
     }
 }
 

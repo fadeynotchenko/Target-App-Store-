@@ -6,6 +6,8 @@
 //
 
 import SwiftUI
+import StoreKit
+import Lottie
 
 struct ContentView: View {
     
@@ -14,8 +16,11 @@ struct ContentView: View {
     @FetchRequest(sortDescriptors: [NSSortDescriptor(key: "date", ascending: true)]) var targets: FetchedResults<Target>
     
     @State private var showNewTargetView = false
+    @State private var showProVersionView = false
     
     @State private var id: UUID?
+    
+    @AppStorage("VN.Target.full-version-2") var fullVersion = false
     
     @EnvironmentObject var vm: ViewModel
     
@@ -33,20 +38,24 @@ struct ContentView: View {
                             
                         }
                     }
+                    .listStyle(.inset)
                     
                     if targets.filter({ $0.isFinished == false }).isEmpty {
                         Text("empty")
                     }
                 }
-                .listStyle(.automatic)
                 .navigationTitle(Text("appname"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
+                }
+                .sheet(isPresented: $showProVersionView) {
+                    ProVersion(showProVersionView: $showProVersionView, showNewTargetView: $showNewTargetView)
                 }
                 .toolbar {
                     ToolbarItem {
                         showNewTargetViewButton
                     }
+                    
                 }
                 
                 Text("placeholder")
@@ -56,7 +65,11 @@ struct ContentView: View {
     
     private var showNewTargetViewButton: some View {
         Button {
-            showNewTargetView = true
+            if targets.filter( { $0.isFinished == false }).count > 0 && !fullVersion {
+                showProVersionView = true
+            } else {
+                showNewTargetView = true
+            }
         } label: {
             Image(systemName: "plus")
         }
@@ -94,122 +107,102 @@ struct ContentView: View {
     }
 }
 
-struct TargetRow: View {
+struct ProVersion: View {
     
-    @ObservedObject var target: Target
-    
-    @State private var percent: CGFloat = 0
-    @State private var txtPercent = 0
-    
-    @Environment(\.managedObjectContext) private var viewContext
+    @Binding var showProVersionView: Bool
+    @Binding var showNewTargetView: Bool
     
     @EnvironmentObject var vm: ViewModel
+    @Environment(\.dismiss) var dismiss
+    
+    @AppStorage("VN.Target.full-version-2") var fullVersion = false
     
     var body: some View {
-        if Constants.IDIOM == .pad {
-            NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
-                TargetDetailView(target: target)
-            } label: {
-                label
+        NavigationView {
+            VStack {
+                LottieView(name: "pig")
+                    .frame(width: 300, height: 300)
+                
+                Text("Для создания больше одной цели - требуется доступ к полной версии приложения")
+                    .bold()
+                    .font(.headline)
+                    .padding()
+                    .multilineTextAlignment(.center)
+                
+                Spacer()
+                
+                if let product = vm.products.first {
+                    Button {
+                        Task {
+                            await vm.purchase()
+                        }
+                    } label: {
+                        HStack(spacing: 5) {
+                            Text("Купить")
+                                .bold()
+                            
+                            Text(product.displayPrice)
+                                .bold()
+                        }
+                        .padding()
+                        .background(Color("Color"))
+                        .cornerRadius(15)
+                    }
+                }
+                
+                Text("Покупка полной версии осуществляется один раз!")
+                    .padding()
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.gray)
             }
-        } else {
-            NavigationLink {
-                TargetDetailView(target: target)
-            } label: {
-                label
-            }
-        }
-    }
-    
-    private var label: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(target.name ?? "")
-                .bold()
-                .font(.title3)
-            
-            if target.isFinished {
-                capsuleFinish
-            } else {
-                capsuleProgress
-            }
-            
-            Text("\(target.current) / \(target.price) \(Constants.valueArray[Int(target.valueIndex)].symbol)")
-                .bold()
-                .foregroundColor(.gray)
-            
-        }
-        .padding(.vertical)
-        .padding(.horizontal, Constants.IDIOM == .pad ? 10 : 0)
-    }
-    
-    private var capsuleProgress: some View {
-        ZStack(alignment: .leading) {
-            
-            ZStack(alignment: .trailing) {
-                HStack {
-                    Capsule()
-                        .fill(.gray.opacity(0.1))
-                        .frame(width: Constants.IDIOM == .pad ? 150 : 200, height: 12)
+            .onChange(of: fullVersion) { _ in
+                if fullVersion {
+                    dismiss()
                     
-                    Text("\(txtPercent) %")
-                        .foregroundColor(.gray)
-                        .bold()
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                        withAnimation {
+                            showNewTargetView = true
+                        }
+                    }
                 }
             }
-            
-            Capsule()
-                .fill(LinearGradient(colors: [.purple, Constants.colorArray[Int(target.colorIndex)]], startPoint: .leading, endPoint: .trailing))
-                .frame(width: percent / 100 * (Constants.IDIOM == .pad ? 150 : 200), height: 12)
-        }
-        .onAppear {
-            calculatePercent(price: target.price, current: target.current)
-        }
-        .onChange(of: target.current) { new in
-            calculatePercent(price: target.price, current: new)
-        }
-        .onChange(of: target.price) { new in
-            calculatePercent(price: new, current: target.current)
-        }
-    }
-    
-    private var capsuleFinish: some View {
-        ZStack(alignment: .leading) {
-            
-            ZStack(alignment: .trailing) {
-                HStack {
-                    Capsule()
-                        .fill(.gray.opacity(0.1))
-                        .frame(width: Constants.IDIOM == .pad ? 150 : 200, height: 12)
-                    
-                    Text("100 %")
-                        .foregroundColor(.gray)
-                        .bold()
+            .navigationTitle(Text("PRO Версия"))
+            .toolbar {
+                ToolbarItem {
+                    Button("close") {
+                        showProVersionView = false
+                    }
                 }
             }
-            
-            Capsule()
-                .fill(LinearGradient(colors: [.purple, Constants.colorArray[Int(target.colorIndex)]], startPoint: .leading, endPoint: .trailing))
-                .frame(width: (Constants.IDIOM == .pad ? 150 : 200), height: 12)
-        }
-    }
-    
-    private func calculatePercent(price: Int64, current: Int64) {
-        guard price != 0 else { return }
-        
-        txtPercent = min(Int(current * 100 / price), 100)
-        
-        withAnimation(.easeInOut(duration: 1.0)) {
-            percent = min(CGFloat(current * 100 / price), 100.0)
         }
     }
 }
 
-struct ContentView_Previews: PreviewProvider {
-    static var previews: some View {
-        ContentView()
-            .environment(\.managedObjectContext, PersistenceController.preview.container.viewContext)
-            .environmentObject(ViewModel())
-            .colorScheme(.dark)
+struct LottieView: UIViewRepresentable {
+    
+    let name: String
+    
+    let animationView = AnimationView()
+    
+    func makeUIView(context: Context) -> some UIView {
+        let view = UIView(frame: .zero)
+        
+        animationView.animation = Animation.named(name)
+        animationView.contentMode = .scaleAspectFit
+        animationView.loopMode = .loop
+        animationView.play()
+        
+        view.addSubview(animationView)
+        
+        animationView.translatesAutoresizingMaskIntoConstraints = false
+        animationView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
+        animationView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
+        
+        return view
+    }
+    
+    func updateUIView(_ uiView: UIViewType, context: Context) {
+        
     }
 }
 

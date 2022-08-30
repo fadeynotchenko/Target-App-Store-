@@ -67,21 +67,15 @@ struct TargetDetailView: View {
             GeometryReader { reader in
                 ScrollView {
                     VStack(alignment: .center, spacing: Constants.IDIOM == .pad ? 30 : 30) {
-                        if target.isFinished {
-                            finishCircle(reader)
-                        } else {
-                            circleProgressWithActionButtons(reader)
-                                .padding(.top)
-                        }
+                        circleProgressWithActionButtons(reader)
+                            .padding(.top)
                         
                         Text("\(target.current) / \(target.price) \(symbol)")
                             .bold()
                             .font(.title2)
                             .padding(.top)
                         
-                        if !target.isFinished {
-                            DetailView(title1: "Осталось:", subtitle1: "\(target.price - target.current) \(symbol)", title2: "Копите:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color)
-                        }
+                        DetailView(title1: "Осталось:", subtitle1: Int(target.price - target.current), title2: "Копите:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
                         
                         Text("История операций:")
                             .foregroundColor(.gray)
@@ -106,10 +100,11 @@ struct TargetDetailView: View {
             }
             .toolbar {
                 ToolbarItem {
-                    if !showPlaceholder && !target.isFinished {
+                    if !showPlaceholder {
                         Button("Изменить") {
                             showEditView = true
                         }
+                        .disabled(target.price == target.current)
                     }
                 }
             }
@@ -151,35 +146,6 @@ struct TargetDetailView: View {
         .frame(width: (circleWidth == 150 || Constants.IDIOM == .phone) ? 330 : 450)
     }
     
-    private func finishCircle(_ reader: GeometryProxy) -> some View {
-            ZStack(alignment: .center) {
-                ZStack {
-                    Circle()
-                        .stroke(lineWidth: 16)
-                        .foregroundColor(Color("Color"))
-                    
-                    Circle()
-                        .trim(from: 0.0, to: 1.0)
-                        .stroke(style: StrokeStyle(lineWidth: 16, lineCap: .round, lineJoin: .round))
-                        .fill(LinearGradient(colors: [color, .purple], startPoint: .leading, endPoint: .trailing))
-                        .rotationEffect(Angle(degrees: 270))
-                }
-                
-                Text("100 %")
-                    .bold()
-                    .font(.title)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .frame(width: circleWidth, height: circleWidth)
-            .padding(.horizontal)
-            .onAppear {
-                circleWidth = calculateCircleWidth(reader)
-            }
-            .onChange(of: reader.size.width) { new in
-                circleWidth = calculateCircleWidth(reader)
-            }
-    }
-    
     private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
         HStack(spacing: 0) {
             ForEach(0..<(Constants.IDIOM == .pad ? 3 : 1), id: \.self) { _ in
@@ -190,6 +156,7 @@ struct TargetDetailView: View {
                 selection = 0
                 showActionView = true
             }
+            .disabled(target.price == target.current)
             
             Spacer()
             
@@ -235,6 +202,7 @@ struct TargetDetailView: View {
                 selection = 1
                 showActionView = true
             }
+            .disabled(target.price == target.current)
             
             ForEach(0..<(Constants.IDIOM == .pad ? 3 : 1), id: \.self) { _ in
                 Spacer()
@@ -289,10 +257,11 @@ struct TargetDetailView: View {
 struct DetailView: View {
     
     var title1: String
-    var subtitle1: String
+    var subtitle1: Int
     var title2: String
     var subtitle2: String
     var color: Color
+    var symbol: String
     
     var body: some View {
         HStack(spacing: 0) {
@@ -300,7 +269,7 @@ struct DetailView: View {
                 Text(title1)
                     .foregroundColor(.gray)
                 
-                Text(subtitle1)
+                Text("\(subtitle1) \(symbol)")
                     .font(.title3)
                     .bold()
                     .gradientForeground(colors: [color, .purple])

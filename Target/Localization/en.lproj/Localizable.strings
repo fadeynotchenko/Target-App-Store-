@@ -17,11 +17,9 @@
 "namehint" = "Name of your target";
 "value" = "Change currency";
 "add" = "Add";
-"replenishment" = "Replenishment of the piggy bank";
+"reminders" = "Reminders";
 "never" = "Never";
 "once a" = "Once a";
-"repfooter" = "Add a daily, weekly, or monthly top-up";
-"addrep" = "Add replenishment";
-"replenishmenttitle" = "Replenishment";
+"addrem" = "Add reminders";
 "color" = "Сolor of progress";
 "archiveempty" = "Archive is empty";
