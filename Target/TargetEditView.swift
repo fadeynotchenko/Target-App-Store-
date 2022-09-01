@@ -58,9 +58,9 @@ struct TargetEditView: View {
                                 backToMainView = true
                             }
                             
-                            DispatchQueue.main.async {
-                                PersistenceController.deleteTarget(target: target, context: managedObjectContext)
-                            }
+                            NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
+                            
+                            PersistenceController.deleteTarget(target: target, context: managedObjectContext)
                         } label: {
                             Text("delete")
                                 .foregroundColor(.red)

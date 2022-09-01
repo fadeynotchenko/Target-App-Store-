@@ -22,7 +22,7 @@ struct ArchiveTargetsView: View {
                     archiveRow(target)
                 }
             }
-            .listStyle(.inset)
+            .listStyle(.insetGrouped)
             
             if targets.filter({ $0.isFinished }).isEmpty {
                 Text("archiveempty")
@@ -64,6 +64,6 @@ struct ArchiveTargetsView: View {
                         .gradientForeground(colors: [Constants.colorArray[Int(target.colorIndex)], .purple])
                 }
             }
-            .padding()
+            .padding(.vertical)
     }
 }

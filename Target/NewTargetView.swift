@@ -22,7 +22,6 @@ struct NewTargetView: View {
     @State private var valueIndex = 0
     @State private var colorIndex = 0
     @State private var addReplenishment = false
-    @State private var addNotifications = false
     @State private var timeIndex = 0
     @State private var replenishment: NSNumber?
     
@@ -41,7 +40,7 @@ struct NewTargetView: View {
                 
                 priceSection
                 
-                //addReplenishmentSection
+                addReplenishmentSection
                 
                 LazyColorHStack(tagIndex: $colorIndex)
             }
@@ -88,7 +87,7 @@ struct NewTargetView: View {
                 }
             }
             
-            FormatSumTextField(numberValue: $price, placeholder: region == "ru" ? "Цена в \(value.symbol)" : "Price in \(value.symbol)", numberFormatter: Constants.formatter())
+            FormatSumTextField(numberValue: $price, placeholder: region == "ru" ? "Cколько стоит Ваша цель?" : "How much is your target worth?", numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: price, perform: { _ in
                     if Int(truncating: price ?? 0) > Constants.MAX {
@@ -96,7 +95,7 @@ struct NewTargetView: View {
                     }
                 })
             
-            FormatSumTextField(numberValue: $current, placeholder: region == "ru" ? "Уже накоплено (Необязательно)" : "Already accumulated (Optional)", numberFormatter: Constants.formatter())
+            FormatSumTextField(numberValue: $current, placeholder: region == "ru" ? "Сколько уже накоплено?" : "How much has already been accumulated?", numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: current, perform: { _ in
                     if Int(truncating: current ?? 0) > Int(truncating: price ?? 0) {
@@ -120,12 +119,11 @@ struct NewTargetView: View {
             target.valueIndex = Int16(valueIndex)
             target.date = Date()
             
-            if let replenishment = replenishment {
+            if let replenishment = replenishment, addReplenishment {
                 target.replenishment = Int64(truncating: replenishment)
                 target.timeIndex = Int16(timeIndex)
                 
-                let dateComponents = Constants.globalFunc.nextRep(selection: timeIndex)
-                target.dateNext = Calendar.current.date(from: dateComponents)
+                NotificationHandler.sendNotification(target, context: managedObjectContext)
             }
             
             PersistenceController.save(target: target, context: managedObjectContext)
@@ -165,7 +163,7 @@ struct NewTargetView: View {
                 }
                 .onChange(of: addReplenishment) { toggle in
                     if toggle {
-                        //NotificationHandler.requestPermission()
+                        NotificationHandler.requestPermission()
                     }
                 }
             }

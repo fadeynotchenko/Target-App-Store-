@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import UserNotifications
 
 struct TargetDetailView: View {
     
@@ -60,6 +61,8 @@ struct TargetDetailView: View {
         Constants.IDIOM == .pad && vm.id == nil
     }
     
+    @State var trigger: UNCalendarNotificationTrigger?
+    
     var body: some View {
         if showPlaceholder {
             Text("Placeholder")
@@ -77,14 +80,18 @@ struct TargetDetailView: View {
                         
                         DetailView(title1: "left", subtitle1: Int(target.price - target.current), title2: "gone", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
                         
-                        Text("history")
-                            .foregroundColor(.gray)
+                        remindersView
                         
-                        LazyVStack(spacing: 30) {
-                            ForEach(actionArray) { action in
-                                actionRow(action: action)
-                            }
+                        Button {
+                        } label: {
+                            Text("История операций (\(0))")
+                                .bold()
+                                .foregroundColor(.gray)
+                                .padding()
                         }
+                        .frame(width: 330)
+                        .background(Color("Color"))
+                        .cornerRadius(15)
                     }
                 }
             }
@@ -108,6 +115,60 @@ struct TargetDetailView: View {
                     }
                 }
             }
+            .onAppear {
+                checkNotifications()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var remindersView: some View {
+        if let dateNext = target.dateNext {
+            VStack(spacing: 10) {
+                Text("Следующие напоминание:")
+                    .foregroundColor(.gray)
+                
+                Text(target.dateNext ?? Date(), format: .dateTime.year().month().day())
+                    .bold()
+                    .font(.title3)
+                    .gradientForeground(colors: [color, .purple])
+                
+                Text("Пополните копилку на:")
+                    .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
+                    .padding(.top)
+                
+                Text("\(target.replenishment) \(symbol)")
+                    .bold()
+                    .font(.title3)
+                    .gradientForeground(colors: [color, .purple])
+                
+                Button {
+                    target.current += target.replenishment
+                    
+                    
+                    NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
+                    
+                    target.dateNext = NotificationHandler.sendNotification(target, context: viewContext)
+                    
+                    DispatchQueue.main.async {
+                        PersistenceController.save(target: target, context: viewContext)
+                    }
+                } label: {
+                    Text("Пополнить")
+                        .bold()
+                    
+                }
+                .disabled(Date() < target.dateNext ?? Date())
+                .padding()
+                .frame(width: 300)
+                .background(.black)
+                .cornerRadius(15)
+            }
+            .padding()
+            .frame(width: 330)
+            .background(Color("Color"))
+            .cornerRadius(15)
         }
     }
     
@@ -252,6 +313,17 @@ struct TargetDetailView: View {
         
         return reader.size.width / 1.9
     }
+    
+    private func checkNotifications() {
+        UNUserNotificationCenter.current().getPendingNotificationRequests { requsts in
+            for requst in requsts {
+                print(requst)
+                if requst.identifier == target.id?.uuidString, let trig = requst.trigger as? UNCalendarNotificationTrigger {
+                    trigger = trig
+                }
+            }
+        }
+    }
 }
 
 struct DetailView: View {
@@ -264,30 +336,34 @@ struct DetailView: View {
     var symbol: String
     
     var body: some View {
-        HStack(spacing: 0) {
-            VStack(spacing: 5) {
-                Text(title1)
-                    .foregroundColor(.gray)
+        VStack {
+            HStack(spacing: 0) {
+                Spacer()
                 
-                Text("\(subtitle1) \(symbol)")
-                    .font(.title3)
-                    .bold()
-                    .gradientForeground(colors: [color, .purple])
-            }
-            .padding(.leading, 25)
-            
-            Spacer()
-            
-            VStack(spacing: 5) {
-                Text(title2)
-                    .foregroundColor(.gray)
+                VStack(spacing: 5) {
+                    Text(title1)
+                        .foregroundColor(.gray)
+                    
+                    Text("\(subtitle1) \(symbol)")
+                        .font(.title3)
+                        .bold()
+                        .gradientForeground(colors: [color, .purple])
+                }
                 
-                Text(subtitle2)
-                    .font(.title3)
-                    .bold()
-                    .gradientForeground(colors: [color, .purple])
+                Spacer()
+                
+                VStack(spacing: 5) {
+                    Text(title2)
+                        .foregroundColor(.gray)
+                    
+                    Text(subtitle2)
+                        .font(.title3)
+                        .bold()
+                        .gradientForeground(colors: [color, .purple])
+                }
+                
+                Spacer()
             }
-            .padding(.trailing, 25)
         }
         .padding()
         .frame(width: 330)

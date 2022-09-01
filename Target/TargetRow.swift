@@ -19,19 +19,7 @@ struct TargetRow: View {
     @EnvironmentObject var vm: ViewModel
     
     var body: some View {
-        if Constants.IDIOM == .pad {
-            NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
-                TargetDetailView(target: target)
-            } label: {
-                label
-            }
-        } else {
-            NavigationLink {
-                TargetDetailView(target: target)
-            } label: {
-                label
-            }
-        }
+        label
     }
     
     private var label: some View {
@@ -57,7 +45,7 @@ struct TargetRow: View {
             ZStack(alignment: .trailing) {
                 HStack {
                     Capsule()
-                        .fill(Color("Color"))
+                        .fill(.gray.opacity(0.1))
                         .frame(width: Constants.IDIOM == .pad ? 150 : 200, height: 12)
                     
                     Text("\(txtPercent) %")

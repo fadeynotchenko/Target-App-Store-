@@ -44,7 +44,7 @@ class Constants {
             var str = "\(components.day ?? 0)"
             
             if Constants.region == "ru" {
-                switch (components.day ?? 0) % 100 {
+                switch (components.day ?? 0) % 10 {
                 case 11...19: str += " дней"
                 case 1: str += " день"
                 case 2...4: str += " дня"

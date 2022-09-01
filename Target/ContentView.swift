@@ -30,19 +30,14 @@ struct ContentView: View {
                     List {
                         archiveButton
                         
-                        ForEach(targets.filter({ $0.isFinished == false })) { target in
-                            TargetRow(target: target)
-                                .swipeActions {
-                                    deleteButton(target)
-                                }
-                        }
+                        targetList
                     }
-                    .listStyle(.inset)
                     
                     if targets.filter({ $0.isFinished == false }).isEmpty {
                         Text("empty")
                     }
                 }
+                .listStyle(.insetGrouped)
                 .navigationTitle(Text("appname"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
@@ -60,6 +55,37 @@ struct ContentView: View {
                 Text("placeholder")
             }
         
+    }
+    
+    @ViewBuilder
+    private var targetList: some View {
+        if Constants.IDIOM == .pad {
+            ForEach(targets.filter({ $0.isFinished == false })) { target in
+                Section {
+                    NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
+                        TargetDetailView(target: target)
+                    } label: {
+                        TargetRow(target: target)
+                    }
+                }
+                .swipeActions {
+                    deleteButton(target)
+                }
+            }
+        } else {
+            ForEach(targets.filter({ $0.isFinished == false })) { target in
+                Section {
+                    NavigationLink {
+                        TargetDetailView(target: target)
+                    } label: {
+                        TargetRow(target: target)
+                    }
+                }
+                .swipeActions {
+                    deleteButton(target)
+                }
+            }
+        }
     }
     
     private var showNewTargetViewButton: some View {
@@ -97,6 +123,8 @@ struct ContentView: View {
     
     private func deleteButton(_ target: Target) -> some View {
         Button(role: .destructive) {
+            NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
+            
             withAnimation {
                 PersistenceController.deleteTarget(target: target, context: viewContext)
             }
@@ -119,9 +147,6 @@ struct ProVersion: View {
     var body: some View {
         NavigationView {
             VStack {
-                LottieView(name: "pig")
-                    .frame(width: 300, height: 300)
-                
                 Text("Для создания больше одной цели - требуется доступ к полной версии приложения")
                     .bold()
                     .font(.headline)
@@ -174,34 +199,6 @@ struct ProVersion: View {
                 }
             }
         }
-    }
-}
-
-struct LottieView: UIViewRepresentable {
-    
-    let name: String
-    
-    let animationView = AnimationView()
-    
-    func makeUIView(context: Context) -> some UIView {
-        let view = UIView(frame: .zero)
-        
-        animationView.animation = Animation.named(name)
-        animationView.contentMode = .scaleAspectFit
-        animationView.loopMode = .loop
-        animationView.play()
-        
-        view.addSubview(animationView)
-        
-        animationView.translatesAutoresizingMaskIntoConstraints = false
-        animationView.heightAnchor.constraint(equalTo: view.heightAnchor).isActive = true
-        animationView.widthAnchor.constraint(equalTo: view.widthAnchor).isActive = true
-        
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIViewType, context: Context) {
-        
     }
 }
 

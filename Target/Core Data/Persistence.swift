@@ -41,7 +41,7 @@ struct PersistenceController {
             try context.save()
             print("save")
         } catch {
-            print("Error save \(error.localizedDescription)")
+            print("Error save \(error)")
         }
         
         //update widget view
