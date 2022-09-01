@@ -20,15 +20,13 @@ struct TargetActionView: View {
     @State private var date = Date()
     @State private var comment = ""
     
-    private let titles: [LocalizedStringKey] = ["mstitle", "pltitle"]
-    
     @Environment(\.managedObjectContext) var managedObjectContext
     
     var body: some View {
         NavigationView {
             Form {
                 Section {
-                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? String(format: NSLocalizedString("minus", comment: "")) : String(format: NSLocalizedString("plus", comment: "")), numberFormatter: Constants.formatter())
+                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? "Сколько достать из копилки?" : "Сколько положить в копилку?", numberFormatter: Constants.formatter())
                         .keyboardType(.numberPad)
                         .onChange(of: minusCurrent, perform: { _ in
                             if Int64(truncating: minusCurrent ?? 0) > target.current {
@@ -41,15 +39,19 @@ struct TargetActionView: View {
                             }
                         })
                 } footer: {
-                    Text(selection == 0 ? "Max: \(target.current)" : "Max: \(target.price - target.current)")
+                    if selection == 0 {
+                        Text("Максимум: \(target.current)")
+                    } else {
+                        Text("Максимум: \(target.price - target.current)")
+                    }
                 }
                 
                 Section {
-                    TextField("comment", text: $comment)
+                    TextField("Комментарий:", text: $comment)
                 }
-            
+                
                 Section {
-                    Toggle("date", isOn: $dateIsOn)
+                    Toggle("Дата:", isOn: $dateIsOn)
                     
                     if dateIsOn {
                         DatePicker("", selection: $date, displayedComponents: .date)
@@ -60,11 +62,11 @@ struct TargetActionView: View {
                 
                 
             }
-            .navigationTitle(selection == 0 ? Text(titles[0]) : Text(titles[1]))
+            .navigationTitle(selection == 0 ? "Вычесть" : "Добавить")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("close") {
+                    Button("Закрыть") {
                         showActionView.toggle()
                     }
                 }
@@ -113,10 +115,11 @@ struct TargetActionView: View {
             
             
         } label: {
-            Text("save")
+            Text("Сохранить")
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .disabled(selection == 0 && minusCurrent == nil ? true : false)
         .disabled(selection == 1 && plusCurrent == nil ? true : false)
     }
 }
+

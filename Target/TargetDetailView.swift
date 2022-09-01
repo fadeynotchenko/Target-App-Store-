@@ -65,7 +65,7 @@ struct TargetDetailView: View {
     
     var body: some View {
         if showPlaceholder {
-            Text("Placeholder")
+            Text("Выберите цель из списка")
         } else {
             GeometryReader { reader in
                 ScrollView {
@@ -78,20 +78,18 @@ struct TargetDetailView: View {
                             .font(.title2)
                             .padding(.top)
                         
-                        DetailView(title1: "left", subtitle1: Int(target.price - target.current), title2: "gone", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
+                        DetailView(title1: "Осталось:", subtitle1: Int(target.price - target.current), title2: "Прошло:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
                         
                         remindersView
                         
-                        Button {
-                        } label: {
-                            Text("История операций (\(0))")
-                                .bold()
-                                .foregroundColor(.gray)
-                                .padding()
+                        Text("История операций:")
+                            .foregroundColor(.gray)
+                        
+                        LazyVStack(spacing: 20) {
+                            ForEach(actionArray) { action in
+                                actionRow(action: action)
+                            }
                         }
-                        .frame(width: 330)
-                        .background(Color("Color"))
-                        .cornerRadius(15)
                     }
                 }
             }
@@ -108,7 +106,7 @@ struct TargetDetailView: View {
             .toolbar {
                 ToolbarItem {
                     if !showPlaceholder {
-                        Button("edit") {
+                        Button("Изменить") {
                             showEditView = true
                         }
                         .disabled(target.price == target.current)
@@ -123,20 +121,20 @@ struct TargetDetailView: View {
     
     @ViewBuilder
     private var remindersView: some View {
-        if let dateNext = target.dateNext {
+        if target.dateNext != nil {
             VStack(spacing: 10) {
-                Text("Следующие напоминание:")
+                Text("Следующие запланированное пополнение копилки:")
                     .foregroundColor(.gray)
+                    .multilineTextAlignment(.center)
                 
-                Text(target.dateNext ?? Date(), format: .dateTime.year().month().day())
+                Text(target.dateNext!, format: .dateTime.year().month().day())
                     .bold()
                     .font(.title3)
                     .gradientForeground(colors: [color, .purple])
                 
-                Text("Пополните копилку на:")
+                Text("Сумма пополнения:")
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
-                    .padding(.top)
                 
                 Text("\(target.replenishment) \(symbol)")
                     .bold()
@@ -144,16 +142,24 @@ struct TargetDetailView: View {
                     .gradientForeground(colors: [color, .purple])
                 
                 Button {
-                    target.current += target.replenishment
+                    let action = Action(context: viewContext)
+                    action.id = UUID()
+                    action.date = Date()
                     
+                    if target.current + target.replenishment > target.price {
+                        action.value = target.price - target.current
+                        target.current = target.price
+                    } else {
+                        target.current += target.replenishment
+                        action.value = target.replenishment
+                    }
+                    
+                    target.addToAction(action)
                     
                     NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
                     
-                    target.dateNext = NotificationHandler.sendNotification(target, context: viewContext)
+                    NotificationHandler.sendNotification(target, context: viewContext)
                     
-                    DispatchQueue.main.async {
-                        PersistenceController.save(target: target, context: viewContext)
-                    }
                 } label: {
                     Text("Пополнить")
                         .bold()
@@ -162,7 +168,7 @@ struct TargetDetailView: View {
                 .disabled(Date() < target.dateNext ?? Date())
                 .padding()
                 .frame(width: 300)
-                .background(.black)
+                .background(colorScheme == .light ? .white : .black)
                 .cornerRadius(15)
             }
             .padding()
@@ -204,7 +210,7 @@ struct TargetDetailView: View {
         .padding()
         .background(Color("Color"))
         .cornerRadius(15)
-        .frame(width: (circleWidth == 150 || Constants.IDIOM == .phone) ? 330 : 450)
+        .frame(width: (circleWidth == 180 || Constants.IDIOM == .phone) ? 330 : 450)
     }
     
     private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
@@ -304,7 +310,7 @@ struct TargetDetailView: View {
     private func calculateCircleWidth(_ reader: GeometryProxy) -> CGFloat {
         if Constants.IDIOM == .pad {
             switch reader.size.width {
-            case 0..<400: return 150
+            case 0..<400: return 180
             case 400..<1000: return 220
             default:
                 return 260

@@ -28,6 +28,29 @@ class ViewModel: ObservableObject {
         }
     }
     
+    func checkCurrentAuthorizationSetting() async -> Bool {
+        let notificationCenter = UNUserNotificationCenter.current()
+        // Request the current notification settings
+        let currentSettings = await notificationCenter.notificationSettings()
+        
+        switch currentSettings.authorizationStatus {
+            case .authorized:
+                break
+            case .denied:
+                return false
+            case .ephemeral:
+                break
+            case .notDetermined:
+                break
+            case .provisional:
+                break
+            @unknown default:
+                break
+        }
+        
+        return true
+    }
+    
     func isPurchased(product: Product) async {
         guard let product = products.first else { return }
         

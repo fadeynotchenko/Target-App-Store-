@@ -22,7 +22,7 @@ class NotificationHandler {
         }
     }
     
-    static func sendNotification(_ target: Target, context: NSManagedObjectContext) -> Date? {
+    static func sendNotification(_ target: Target, context: NSManagedObjectContext) {
         let dateComponents = calculateDate(selection: Int(target.timeIndex))
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
         
@@ -35,7 +35,9 @@ class NotificationHandler {
         
         UNUserNotificationCenter.current().add(request)
         
-        return trigger.nextTriggerDate()
+        target.dateNext = trigger.nextTriggerDate()
+        
+        PersistenceController.save(target: target, context: context)
     }
     
     static func deleteNotification(by id: String) {
@@ -46,14 +48,14 @@ class NotificationHandler {
     
     public static func calculateDate(selection: Int) -> DateComponents {
         var dateComponents = DateComponents()
-        dateComponents.hour = 12
+        dateComponents.hour = 00
         
         switch selection {
         case 1:
-            dateComponents = Calendar.current.dateComponents([.weekday, .hour], from: Date())
+            dateComponents = Calendar.current.dateComponents([.weekday], from: Date())
             return dateComponents
         case 2:
-            dateComponents = Calendar.current.dateComponents([.weekday, .weekOfMonth, .hour], from: Date())
+            dateComponents = Calendar.current.dateComponents([.weekday, .weekOfMonth], from: Date())
             return dateComponents
         default:
             return dateComponents

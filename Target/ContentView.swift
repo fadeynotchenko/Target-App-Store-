@@ -25,20 +25,21 @@ struct ContentView: View {
     @EnvironmentObject var vm: ViewModel
     
     var body: some View {
+        GeometryReader { reader in
             NavigationView {
                 ZStack {
                     List {
-                        archiveButton
+                        //archiveButton
                         
                         targetList
                     }
                     
                     if targets.filter({ $0.isFinished == false }).isEmpty {
-                        Text("empty")
+                        Text("Список пуст")
                     }
                 }
                 .listStyle(.insetGrouped)
-                .navigationTitle(Text("appname"))
+                .navigationTitle(Text("Моя Копилка"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
                 }
@@ -52,9 +53,10 @@ struct ContentView: View {
                     
                 }
                 
-                Text("placeholder")
+                Text("Выберите цель из списка")
             }
-        
+            .currentNavigationStyle(width: reader.size.width)
+        }
     }
     
     @ViewBuilder
@@ -106,7 +108,7 @@ struct ContentView: View {
         } label: {
             Label {
                 HStack(spacing: 5) {
-                    Text("archive")
+                    Text("Архив")
                         .bold()
                     
                     Text("(\(targets.filter( { $0.isFinished }).count))")
@@ -193,7 +195,7 @@ struct ProVersion: View {
             .navigationTitle(Text("PRO Версия"))
             .toolbar {
                 ToolbarItem {
-                    Button("close") {
+                    Button("Закрыть") {
                         showProVersionView = false
                     }
                 }
@@ -204,18 +206,10 @@ struct ProVersion: View {
 
 //need for fix slide row effect
 extension View {
-    @ViewBuilder
-    func currentListStyle() -> some View {
-        if Constants.IDIOM == .pad {
-            self.listStyle(.automatic)
-        } else {
-            self.listStyle(.sidebar)
-        }
-    }
     
     @ViewBuilder
-    func currentNavigationStyle() -> some View {
-        if Constants.IDIOM == .pad {
+    func currentNavigationStyle(width: CGFloat) -> some View {
+        if Constants.IDIOM == .pad && width > 400 {
             self.navigationViewStyle(.automatic)
         } else {
             self.navigationViewStyle(.stack)

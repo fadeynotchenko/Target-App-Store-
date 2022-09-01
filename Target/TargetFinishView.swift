@@ -21,11 +21,11 @@ struct TargetFinishView: View {
         NavigationView {
             VStack(spacing: 15) {
                 
-                Text("congratulations")
+                Text("Поздравляем!")
                     .bold()
                     .font(.largeTitle)
                 
-                Text("finish")
+                Text("Ваша цель достигнута -")
                     .bold()
                     .font(.title2)
                     .frame(maxWidth: 350)
@@ -37,19 +37,19 @@ struct TargetFinishView: View {
                     .font(.largeTitle)
                     .gradientForeground(colors: [Constants.colorArray[Int(target.colorIndex)], .purple])
                 
-                DetailView(title1: "accumulated", subtitle1: Int(target.price), title2: "per", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
+                DetailView(title1: "Накоплено:", subtitle1: Int(target.price), title2: "Потребовалось:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
                 
                 Spacer()
                 
-                Text("hint")
-                    .frame(width: 300)
-                    .multilineTextAlignment(.center)
-                    .foregroundColor(.gray)
-                    .padding()
+//                Text("hint")
+//                    .frame(width: 300)
+//                    .multilineTextAlignment(.center)
+//                    .foregroundColor(.gray)
+//                    .padding()
             }
             .toolbar {
                 ToolbarItem {
-                    Button("close") {
+                    Button("Закрыть") {
                         if Constants.IDIOM == .phone {
                             dismiss()
                         } else {
