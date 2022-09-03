@@ -38,7 +38,7 @@ struct ContentView: View {
                         Text("Список пуст")
                     }
                 }
-                .listStyle(.insetGrouped)
+                .listStyle(.plain)
                 .navigationTitle(Text("Моя Копилка"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
@@ -52,6 +52,48 @@ struct ContentView: View {
                     }
                     
                 }
+                .onAppear {
+                    Task {
+                        await vm.fetchProducts()
+                    }
+                    
+                    if UserDefaults.standard.bool(forKey: "1") == false {
+                        let t = Target(context: viewContext)
+                        t.id = UUID()
+                        t.name = "AirPods Pro"
+                        t.price = 22000
+                        t.current = 17000
+                        t.replenishment = 1500
+                        t.dateNext = Calendar.current.date(byAdding: .day, value: 7, to: Date())
+                        t.timeIndex = 1
+                        t.colorIndex = 4
+                        t.valueIndex = 0
+                        t.date = Date().addingTimeInterval(-2000000)
+                        
+                        let t1 = Target(context: viewContext)
+                        t1.id = UUID()
+                        t1.name = "Кроссовки"
+                        t1.price = 200
+                        t1.current = 130
+                        t1.colorIndex = 0
+                        t1.valueIndex = 1
+                        t1.date = Date().addingTimeInterval(-1000000)
+                        
+                        let t2 = Target(context: viewContext)
+                        t2.id = UUID()
+                        t2.name = "Клавиатура"
+                        t2.price = 5000
+                        t2.current = 1300
+                        t2.colorIndex = 4
+                        t2.valueIndex = 2
+                        t2.date = Date().addingTimeInterval(-200000)
+                        
+                        UserDefaults.standard.set(true, forKey: "1")
+                        
+                        
+                        PersistenceController.save(target: t, context: viewContext)
+                    }
+                }
                 
                 Text("Выберите цель из списка")
             }
@@ -63,12 +105,10 @@ struct ContentView: View {
     private var targetList: some View {
         if Constants.IDIOM == .pad {
             ForEach(targets.filter({ $0.isFinished == false })) { target in
-                Section {
-                    NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
-                        TargetDetailView(target: target)
-                    } label: {
-                        TargetRow(target: target)
-                    }
+                NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
+                    TargetDetailView(target: target)
+                } label: {
+                    TargetRow(target: target)
                 }
                 .swipeActions {
                     deleteButton(target)
@@ -76,12 +116,10 @@ struct ContentView: View {
             }
         } else {
             ForEach(targets.filter({ $0.isFinished == false })) { target in
-                Section {
-                    NavigationLink {
-                        TargetDetailView(target: target)
-                    } label: {
-                        TargetRow(target: target)
-                    }
+                NavigationLink {
+                    TargetDetailView(target: target)
+                } label: {
+                    TargetRow(target: target)
                 }
                 .swipeActions {
                     deleteButton(target)
@@ -92,7 +130,7 @@ struct ContentView: View {
     
     private var showNewTargetViewButton: some View {
         Button {
-            if targets.filter( { $0.isFinished == false }).count > 0 && !fullVersion {
+            if targets.filter( { $0.isFinished == false }).count > 0 && vm.purchased.isEmpty {
                 showProVersionView = true
             } else {
                 showNewTargetView = true
@@ -144,53 +182,48 @@ struct ProVersion: View {
     @EnvironmentObject var vm: ViewModel
     @Environment(\.dismiss) var dismiss
     
-    @AppStorage("VN.Target.fullversion") var fullVersion = false
-    
     var body: some View {
         NavigationView {
             VStack {
                 Text("Для создания больше одной цели - требуется доступ к полной версии приложения")
-                    .bold()
+                    .foregroundColor(.gray)
                     .font(.headline)
                     .padding()
                     .multilineTextAlignment(.center)
                 
                 Spacer()
                 
-                if let product = vm.products.first {
-                    Button {
-                        Task {
-                            await vm.purchase()
-                        }
-                    } label: {
-                        HStack(spacing: 5) {
-                            Text("Купить")
-                                .bold()
+                Button {
+                    Task {
+                        let bool = await vm.purchase()
+                        
+                        if bool {
+                            dismiss()
                             
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                showNewTargetView = true
+                            }
+                        }
+                    }
+                } label: {
+                    HStack(spacing: 5) {
+                        Text("Купить")
+                            .bold()
+                        
+                        if let product = vm.products.first {
                             Text(product.displayPrice)
                                 .bold()
                         }
-                        .padding()
-                        .background(Color("Color"))
-                        .cornerRadius(15)
                     }
                 }
+                .padding()
+                .background(Color("Color"))
+                .cornerRadius(15)
                 
                 Text("Покупка полной версии осуществляется один раз!")
                     .padding()
                     .multilineTextAlignment(.center)
                     .foregroundColor(.gray)
-            }
-            .onChange(of: fullVersion) { _ in
-                if fullVersion {
-                    dismiss()
-                    
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
-                        withAnimation {
-                            showNewTargetView = true
-                        }
-                    }
-                }
             }
             .navigationTitle(Text("PRO Версия"))
             .toolbar {
@@ -204,9 +237,7 @@ struct ProVersion: View {
     }
 }
 
-//need for fix slide row effect
 extension View {
-    
     @ViewBuilder
     func currentNavigationStyle(width: CGFloat) -> some View {
         if Constants.IDIOM == .pad && width > 400 {
@@ -223,3 +254,4 @@ extension UINavigationController {
         navigationBar.topItem?.backButtonDisplayMode = .minimal
     }
 }
+

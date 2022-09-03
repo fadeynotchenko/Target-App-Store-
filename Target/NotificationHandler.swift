@@ -28,7 +28,7 @@ class NotificationHandler {
         
         let content = UNMutableNotificationContent()
         content.title = target.name ?? ""
-        content.body = bodyString(selection: Int(target.timeIndex), price: target.price, symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
+        content.body = bodyString(selection: Int(target.timeIndex), price: target.replenishment, symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
         content.sound = .default
         
         let request = UNNotificationRequest(identifier: target.id?.uuidString ?? UUID().uuidString, content: content, trigger: trigger)
@@ -55,7 +55,7 @@ class NotificationHandler {
             dateComponents = Calendar.current.dateComponents([.weekday], from: Date())
             return dateComponents
         case 2:
-            dateComponents = Calendar.current.dateComponents([.weekday, .weekOfMonth], from: Date())
+            dateComponents = Calendar.current.dateComponents([.day], from: Date())
             return dateComponents
         default:
             return dateComponents

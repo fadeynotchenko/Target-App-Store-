@@ -170,14 +170,16 @@ struct NewTargetView: View {
                 Toggle(isOn: $addReplenishment) {
                     Text("Добавить напоминания")
                 }
-                .onChange(of: addReplenishment) { toggle in
-                    if toggle {
-                        NotificationHandler.requestPermission()
-                    }
+                .onAppear {
+                    NotificationHandler.requestPermission()
                 }
                 .onReceive(timer) { _ in
                     Task {
-                        notify = await vm.checkCurrentAuthorizationSetting()
+                        notify = try await vm.getPermissionState()
+                        
+                        if !notify {
+                            addReplenishment = false
+                        }
                     }
                 }
                 .disabled(!notify)

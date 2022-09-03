@@ -21,6 +21,7 @@ struct TargetDetailView: View {
     @State private var showActionView = false
     @State private var showEditView = false
     @State private var showFinishView = false
+    @State private var showActionHistoryView = false
     
     @State private var progress: CGFloat = 0
     @State private var selection = 0
@@ -28,16 +29,6 @@ struct TargetDetailView: View {
     @State private var sortSelection = 0
     
     @State private var circleWidth: CGFloat = 0
-    
-    private var actionArray: [Action] {
-        switch sortSelection {
-        case 1: return target.actionArrayByMaxValue
-        case 2: return target.actionArrayByMinValue
-        case 3: return target.actionArrayByComment
-        default:
-            return target.actionArrayByDate
-        }
-    }
     
     private var percent: Int {
         guard target.price != 0 else { return 0 }
@@ -61,14 +52,12 @@ struct TargetDetailView: View {
         Constants.IDIOM == .pad && vm.id == nil
     }
     
-    @State var trigger: UNCalendarNotificationTrigger?
-    
     var body: some View {
         if showPlaceholder {
             Text("Выберите цель из списка")
         } else {
             GeometryReader { reader in
-                ScrollView {
+                ScrollView(showsIndicators: false) {
                     VStack(alignment: .center, spacing: Constants.IDIOM == .pad ? 30 : 30) {
                         circleProgressWithActionButtons(reader)
                             .padding(.top)
@@ -82,52 +71,55 @@ struct TargetDetailView: View {
                         
                         remindersView
                         
-                        Text("История операций:")
-                            .foregroundColor(.gray)
-                        
-                        LazyVStack(spacing: 20) {
-                            ForEach(actionArray) { action in
-                                actionRow(action: action)
+                        Button {
+                            showActionHistoryView = true
+                        } label: {
+                            Text("История пополнений (\(target.actionArrayByDate.count))")
+                                .bold()
+                                .gradientForeground(colors: [color, .purple])
+                        }
+                        .padding()
+                        .frame(width: 330)
+                        .background(Color("Color"))
+                        .cornerRadius(15)
+                    }
+                }
+                .navigationTitle(Text(target.name ?? ""))
+                .sheet(isPresented: $showEditView) {
+                    TargetEditView(showEditView: $showEditView, target: target)
+                }
+                .sheet(isPresented: $showActionView) {
+                    TargetActionView(showActionView: $showActionView, selection: $selection, target: target)
+                }
+                .sheet(isPresented: $showActionHistoryView) {
+                    TargetActionHistoryView(target: target, showActionHistoryView: $showActionHistoryView)
+                }
+                .fullScreenCover(isPresented: $showFinishView) {
+                    TargetFinishView(target: target, showFinishView: $showFinishView)
+                }
+                .toolbar {
+                    ToolbarItem {
+                        if !showPlaceholder {
+                            Button("Изменить") {
+                                showEditView = true
                             }
+                            .disabled(target.price == target.current)
                         }
                     }
                 }
-            }
-            .navigationTitle(Text(target.name ?? ""))
-            .sheet(isPresented: $showEditView) {
-                TargetEditView(showEditView: $showEditView, target: target)
-            }
-            .sheet(isPresented: $showActionView) {
-                TargetActionView(showActionView: $showActionView, selection: $selection, target: target)
-            }
-            .fullScreenCover(isPresented: $showFinishView) {
-                TargetFinishView(target: target, showFinishView: $showFinishView)
-            }
-            .toolbar {
-                ToolbarItem {
-                    if !showPlaceholder {
-                        Button("Изменить") {
-                            showEditView = true
-                        }
-                        .disabled(target.price == target.current)
-                    }
-                }
-            }
-            .onAppear {
-                checkNotifications()
             }
         }
     }
     
     @ViewBuilder
     private var remindersView: some View {
-        if target.dateNext != nil {
+        if let next = target.dateNext {
             VStack(spacing: 10) {
                 Text("Следующие запланированное пополнение копилки:")
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
                 
-                Text(target.dateNext!, format: .dateTime.year().month().day())
+                Text(next, format: .dateTime.year().month().day())
                     .bold()
                     .font(.title3)
                     .gradientForeground(colors: [color, .purple])
@@ -135,6 +127,7 @@ struct TargetDetailView: View {
                 Text("Сумма пополнения:")
                     .foregroundColor(.gray)
                     .multilineTextAlignment(.center)
+                    .padding(.top)
                 
                 Text("\(target.replenishment) \(symbol)")
                     .bold()
@@ -170,47 +163,13 @@ struct TargetDetailView: View {
                 .frame(width: 300)
                 .background(colorScheme == .light ? .white : .black)
                 .cornerRadius(15)
+                .padding(.top)
             }
             .padding()
             .frame(width: 330)
             .background(Color("Color"))
             .cornerRadius(15)
         }
-    }
-    
-    @ViewBuilder
-    private func actionRow(action: Action) -> some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack(spacing: 5) {
-                if action.value < 0 {
-                    Image(systemName: "arrow.down")
-                        .foregroundColor(.red)
-                } else {
-                    Image(systemName: "arrow.up")
-                        .foregroundColor(.green)
-                }
-                
-                Text(action.value < 0 ? "\(action.value) \(symbol)" : "+\(action.value) \(symbol)")
-                    .bold()
-                    .font(.title3)
-                    .foregroundColor(action.value < 0 ? .red : .green)
-                
-                Spacer()
-                
-                Text(action.date ?? Date(), format: .dateTime.day().month().year())
-                    .foregroundColor(.gray)
-            }
-            
-            if let comment = action.comment, !comment.isEmpty {
-                Text(comment)
-                    .multilineTextAlignment(.leading)
-                    .foregroundColor(.gray)
-            }
-        }
-        .padding()
-        .background(Color("Color"))
-        .cornerRadius(15)
-        .frame(width: (circleWidth == 180 || Constants.IDIOM == .phone) ? 330 : 450)
     }
     
     private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
@@ -318,17 +277,6 @@ struct TargetDetailView: View {
         }
         
         return reader.size.width / 1.9
-    }
-    
-    private func checkNotifications() {
-        UNUserNotificationCenter.current().getPendingNotificationRequests { requsts in
-            for requst in requsts {
-                print(requst)
-                if requst.identifier == target.id?.uuidString, let trig = requst.trigger as? UNCalendarNotificationTrigger {
-                    trigger = trig
-                }
-            }
-        }
     }
 }
 

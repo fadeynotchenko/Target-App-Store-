@@ -72,23 +72,13 @@ struct TargetEditView: View {
                             NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
                             
                             PersistenceController.deleteTarget(target: target, context: managedObjectContext)
+                            
                         } label: {
                             Text("Удалить цель")
                                 .foregroundColor(.red)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
-                }
-            }
-            .onAppear {
-                print("call ")
-                if target.dateNext != nil {
-                    addReplenishment = true
-                }
-                
-                timeIndex = Int(target.timeIndex)
-                if target.replenishment > 0 {
-                    replenishment = target.replenishment as NSNumber
                 }
             }
             .navigationTitle(Text("Изменить цель"))
@@ -106,21 +96,21 @@ struct TargetEditView: View {
                 ToolbarItem {
                     Button {
                         showEditView.toggle()
-                        DispatchQueue.main.async {
-                            target.name = newName
-                            target.price = Int64(truncating: newPrice ?? 0)
-                            target.colorIndex = Int16(newTagIndex)
-                            if addReplenishment, let replenishment = replenishment{
-                                target.replenishment = replenishment as! Int64
-                                target.timeIndex = Int16(timeIndex)
-                                
-                                NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
-                                
-                                NotificationHandler.sendNotification(target, context: managedObjectContext)
-                            }
+                        
+                        target.name = newName
+                        target.price = Int64(truncating: newPrice ?? 0)
+                        target.colorIndex = Int16(newTagIndex)
+                        
+                        if addReplenishment, let replenishment = replenishment {
+                            target.replenishment = replenishment as! Int64
+                            target.timeIndex = Int16(timeIndex)
                             
-                            PersistenceController.save(target: target, context: managedObjectContext)
+                            NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
+                            
+                            NotificationHandler.sendNotification(target, context: managedObjectContext)
                         }
+                        
+                        PersistenceController.save(target: target, context: managedObjectContext)
                         
                     } label: {
                         Text("Сохранить")
@@ -151,6 +141,13 @@ struct TargetEditView: View {
                     }
                 }
                 .padding(.vertical, 5)
+                .onAppear {
+                    if target.dateNext != nil {
+                        addReplenishment = true
+                        timeIndex = Int(target.timeIndex)
+                        replenishment = target.replenishment as NSNumber
+                    }
+                }
             }
         }
     }
@@ -161,24 +158,28 @@ struct TargetEditView: View {
                 Toggle(isOn: $addReplenishment) {
                     Text("Добавить напоминания")
                 }
-                .onChange(of: addReplenishment) { toggle in
-                    if toggle {
-                        NotificationHandler.requestPermission()
+                .onChange(of: addReplenishment) { _ in
+                    if addReplenishment == false {
+                        DispatchQueue.main.async {
+                            timeIndex = 0
+                            replenishment = nil
+                            target.dateNext = nil
+                            
+                            PersistenceController.save(target: target, context: managedObjectContext)
+                        }
                     }
                 }
-                .onChange(of: replenishment) { _ in
-                    if let replenishment = replenishment {
-                        target.replenishment = replenishment as! Int64
-                    }
-                    PersistenceController.save(target: target, context: managedObjectContext)
-                }
-                .onChange(of: timeIndex) { _ in
-                    target.timeIndex = Int16(timeIndex)
-                    PersistenceController.save(target: target, context: managedObjectContext)
+                .onAppear {
+                    NotificationHandler.requestPermission()
                 }
                 .onReceive(timer) { _ in
                     Task {
-                        notify = await vm.checkCurrentAuthorizationSetting()
+                        notify = try await vm.getPermissionState()
+                        print(notify)
+                        
+                        if !notify {
+                            addReplenishment = false
+                        }
                     }
                 }
                 .disabled(!notify)
@@ -200,6 +201,22 @@ struct TargetEditView: View {
                     
                 } header: {
                     Text("Раз в")
+                }
+                .onChange(of: timeIndex) { _ in
+                    DispatchQueue.main.async {
+                        target.timeIndex = Int16(timeIndex)
+                        
+                        PersistenceController.save(target: target, context: managedObjectContext)
+                    }
+                }
+                .onChange(of: replenishment) { _ in
+                    DispatchQueue.main.async {
+                        if let replenishment = replenishment {
+                            target.replenishment = replenishment as! Int64
+                        }
+                        
+                        PersistenceController.save(target: target, context: managedObjectContext)
+                    }
                 }
                 
                 Section {
