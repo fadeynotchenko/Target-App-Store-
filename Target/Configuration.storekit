@@ -1,27 +1,22 @@
 {
-  "identifier" : "C09F4CDA",
+  "identifier" : "78F1265C",
   "nonRenewingSubscriptions" : [
 
   ],
   "products" : [
     {
-      "displayPrice" : "4.0",
+      "displayPrice" : "0.99",
       "familyShareable" : false,
-      "internalID" : "6EC56371",
+      "internalID" : "87CDF6C8",
       "localizations" : [
         {
-          "description" : "Unlimited Targets",
-          "displayName" : "Full Version",
+          "description" : "",
+          "displayName" : "",
           "locale" : "en_US"
-        },
-        {
-          "description" : "Неограниченное количество целей",
-          "displayName" : "Полная Версия",
-          "locale" : "ru"
         }
       ],
-      "productID" : "VN.Target.fullversion",
-      "referenceName" : "Full version",
+      "productID" : "com.Target.FullVersion",
+      "referenceName" : "Full Version",
       "type" : "NonConsumable"
     }
   ],

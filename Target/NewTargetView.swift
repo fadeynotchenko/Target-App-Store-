@@ -245,9 +245,3 @@ struct LazyColorHStack: View {
         }
     }
 }
-
-struct Previews_NewTargetView_Previews: PreviewProvider {
-    static var previews: some View {
-        NewTargetView(showNewTargetView: .constant(true))
-    }
-}

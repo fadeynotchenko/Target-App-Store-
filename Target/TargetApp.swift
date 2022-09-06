@@ -20,6 +20,11 @@ struct TargetApp: App {
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
                 .environmentObject(vm)
                 .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
+                .onAppear {
+                    Task {
+                        await vm.fetchProducts()
+                    }
+                }
         }
     }
 }

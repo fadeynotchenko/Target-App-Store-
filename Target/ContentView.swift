@@ -33,10 +33,6 @@ struct ContentView: View {
                         
                         targetList
                     }
-                    
-                    if targets.filter({ $0.isFinished == false }).isEmpty {
-                        Text("Список пуст")
-                    }
                 }
                 .listStyle(.plain)
                 .navigationTitle(Text("Моя Копилка"))
@@ -51,48 +47,6 @@ struct ContentView: View {
                         showNewTargetViewButton
                     }
                     
-                }
-                .onAppear {
-                    Task {
-                        await vm.fetchProducts()
-                    }
-                    
-                    if UserDefaults.standard.bool(forKey: "1") == false {
-                        let t = Target(context: viewContext)
-                        t.id = UUID()
-                        t.name = "AirPods Pro"
-                        t.price = 22000
-                        t.current = 17000
-                        t.replenishment = 1500
-                        t.dateNext = Calendar.current.date(byAdding: .day, value: 7, to: Date())
-                        t.timeIndex = 1
-                        t.colorIndex = 4
-                        t.valueIndex = 0
-                        t.date = Date().addingTimeInterval(-2000000)
-                        
-                        let t1 = Target(context: viewContext)
-                        t1.id = UUID()
-                        t1.name = "Кроссовки"
-                        t1.price = 200
-                        t1.current = 130
-                        t1.colorIndex = 0
-                        t1.valueIndex = 1
-                        t1.date = Date().addingTimeInterval(-1000000)
-                        
-                        let t2 = Target(context: viewContext)
-                        t2.id = UUID()
-                        t2.name = "Клавиатура"
-                        t2.price = 5000
-                        t2.current = 1300
-                        t2.colorIndex = 4
-                        t2.valueIndex = 2
-                        t2.date = Date().addingTimeInterval(-200000)
-                        
-                        UserDefaults.standard.set(true, forKey: "1")
-                        
-                        
-                        PersistenceController.save(target: t, context: viewContext)
-                    }
                 }
                 
                 Text("Выберите цель из списка")

@@ -71,17 +71,15 @@ struct TargetDetailView: View {
                         
                         remindersView
                         
-                        Button {
-                            showActionHistoryView = true
-                        } label: {
-                            Text("История пополнений (\(target.actionArrayByDate.count))")
-                                .bold()
-                                .gradientForeground(colors: [color, .purple])
+                        Text("История операций (\(target.actionArrayByDate.count))")
+                            .bold()
+                            .font(.title3)
+                        
+                        LazyVStack(spacing: 30) {
+                            ForEach(target.actionArrayByDate) { action in
+                                actionRow(action: action)
+                            }
                         }
-                        .padding()
-                        .frame(width: 330)
-                        .background(Color("Color"))
-                        .cornerRadius(15)
                     }
                 }
                 .navigationTitle(Text(target.name ?? ""))
@@ -90,9 +88,6 @@ struct TargetDetailView: View {
                 }
                 .sheet(isPresented: $showActionView) {
                     TargetActionView(showActionView: $showActionView, selection: $selection, target: target)
-                }
-                .sheet(isPresented: $showActionHistoryView) {
-                    TargetActionHistoryView(target: target, showActionHistoryView: $showActionHistoryView)
                 }
                 .fullScreenCover(isPresented: $showFinishView) {
                     TargetFinishView(target: target, showFinishView: $showFinishView)
@@ -109,6 +104,41 @@ struct TargetDetailView: View {
                 }
             }
         }
+    }
+    
+    @ViewBuilder
+    private func actionRow(action: Action) -> some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 5) {
+                if action.value < 0 {
+                    Image(systemName: "arrow.down")
+                        .foregroundColor(.red)
+                } else {
+                    Image(systemName: "arrow.up")
+                        .foregroundColor(.green)
+                }
+                
+                Text(action.value < 0 ? "\(action.value) \(Constants.valueArray[Int(target.valueIndex)].symbol)" : "+\(action.value) \(Constants.valueArray[Int(target.valueIndex)].symbol)")
+                    .bold()
+                    .font(.title3)
+                    .foregroundColor(action.value < 0 ? .red : .green)
+                
+                Spacer()
+                
+                Text(action.date ?? Date(), format: .dateTime.day().month().year())
+                    .foregroundColor(.gray)
+            }
+            
+            if let comment = action.comment, !comment.isEmpty {
+                Text(comment)
+                    .multilineTextAlignment(.leading)
+                    .foregroundColor(.gray)
+            }
+        }
+        .padding()
+        .frame(width: 330)
+        .background(Color("Color"))
+        .cornerRadius(15)
     }
     
     @ViewBuilder

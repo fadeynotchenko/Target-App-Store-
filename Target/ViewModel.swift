@@ -8,7 +8,8 @@
 import SwiftUI
 import StoreKit
 
-class ViewModel: ObservableObject {
+@MainActor
+class ViewModel: ObservableObject{
     @Published var id: UUID?
     
     @Published var products: [Product] = []
@@ -16,18 +17,16 @@ class ViewModel: ObservableObject {
     
     func fetchProducts() async {
         do {
-            let products = try await Product.products(for: ["VN.Target.fullversion"])
+            let products = try await Product.products(for: ["com.Target.FullVersion"])
             self.products = products
             
-            if let product = products.first {
-                await isPurchased(product: product)
-            }
+            await isPurchased()
         } catch {
             print(error)
         }
     }
     
-    func isPurchased(product: Product) async {
+    func isPurchased() async {
         guard let product = products.first else { return }
         
         guard let state = await product.currentEntitlement else { return }
