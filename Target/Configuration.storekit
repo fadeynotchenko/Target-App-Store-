@@ -15,7 +15,7 @@
           "locale" : "en_US"
         }
       ],
-      "productID" : "com.Target.FullVersion",
+      "productID" : "com.temporary.VN.Target",
       "referenceName" : "Full Version",
       "type" : "NonConsumable"
     }
@@ -27,7 +27,7 @@
 
   ],
   "version" : {
-    "major" : 1,
-    "minor" : 2
+    "major" : 2,
+    "minor" : 0
   }
 }

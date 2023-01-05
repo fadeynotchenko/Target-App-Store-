@@ -116,9 +116,9 @@
 				43F3B3C329674100009DE74C /* View Model */,
 				43F3B3C2296740F2009DE74C /* Helpers */,
 				43971BCB28B9259400B1E692 /* Core Data */,
-				4340A99328C798CC003A784F /* Configuration.storekit */,
 				433FBCDC2967393200F6870F /* Localizable.strings */,
 				43971BC128B924E000B1E692 /* Assets.xcassets */,
+				4340A99328C798CC003A784F /* Configuration.storekit */,
 				43971BC328B924E000B1E692 /* Preview Content */,
 			);
 			path = Target;
@@ -489,7 +489,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = VN.Target;
 				PRODUCT_NAME = Target;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -522,7 +522,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.0.3;
+				MARKETING_VERSION = 1.0.4;
 				PRODUCT_BUNDLE_IDENTIFIER = VN.Target;
 				PRODUCT_NAME = Target;
 				SWIFT_EMIT_LOC_STRINGS = YES;

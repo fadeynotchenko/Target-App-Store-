@@ -17,7 +17,7 @@ class StoreViewModel: ObservableObject{
     
     func fetchProducts() async {
         do {
-            let products = try await Product.products(for: ["com.Target.FullVersion"])
+            let products = try await Product.products(for: ["com.temporary.VN.Target"])
             self.products = products
             
             await isPurchased()

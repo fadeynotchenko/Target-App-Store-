@@ -36,6 +36,11 @@ struct ContentView: View {
                         
                         targetList
                     }
+                    
+                    if targets.filter { $0.isFinished == false }.isEmpty {
+                        Text("empty")
+                            .foregroundColor(.gray)
+                    }
                 }
                 .listStyle(.plain)
                 .accentColor(Color(UIColor.systemGroupedBackground))
