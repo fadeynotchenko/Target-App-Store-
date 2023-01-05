@@ -27,12 +27,10 @@ struct TargetEditView: View {
     
     @State private var backToMainView = false
     
-    @Environment(\.managedObjectContext) var managedObjectContext
-    @Environment(\.presentationMode) var present
+    @Environment(\.managedObjectContext) private var managedObjectContext
+    @Environment(\.presentationMode) private var present
     
-    @EnvironmentObject var vm: ViewModel
-    
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+    @EnvironmentObject private var vm: StoreViewModel
     
     var body: some View {
         NavigationView {
@@ -40,23 +38,23 @@ struct TargetEditView: View {
                 Form {
                     Section {
                         TextField("newname", text: $newName)
-                            .onChange(of: newName, perform: {
+                            .onChange(of: newName) {
                                 newName = String($0.prefix(30))
-                            })
+                            }
                             .onAppear {
                                 newName = target.name ?? ""
                             }
                     }
                     
                     Section {
-                        FormatSumTextField(numberValue: $newPrice, placeholder: "Сколько стоит Ваша цель?", numberFormatter: Constants.formatter())
+                        FormatSumTextField(numberValue: $newPrice, placeholder: NSLocalizedString("new1", comment: ""), numberFormatter: Constants.formatter())
                             .keyboardType(.numberPad)
                             .onAppear {
                                 newPrice = (target.price) as NSNumber
                             }
                     }
                     
-                    addReplenishmentSection
+                    //                    addReplenishmentSection
                     
                     LazyColorHStack(tagIndex: $newTagIndex)
                         .onAppear {
@@ -74,21 +72,21 @@ struct TargetEditView: View {
                             PersistenceController.deleteTarget(target: target, context: managedObjectContext)
                             
                         } label: {
-                            Text("Удалить цель")
+                            Text("delete")
                                 .foregroundColor(.red)
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
-            .navigationTitle(Text("Изменить цель"))
+            .navigationTitle(Text("edit"))
             .navigationBarTitleDisplayMode(.inline)
             .fullScreenCover(isPresented: $backToMainView) {
                 ContentView()
             }
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Закрыть") {
+                    Button("close") {
                         showEditView.toggle()
                     }
                 }
@@ -113,7 +111,7 @@ struct TargetEditView: View {
                         PersistenceController.save(target: target, context: managedObjectContext)
                         
                     } label: {
-                        Text("Сохранить")
+                        Text("save")
                     }
                     .frame(maxWidth: .infinity, alignment: .center)
                     .disabled(newName.isEmpty || newPrice == nil)
@@ -122,111 +120,100 @@ struct TargetEditView: View {
         }
     }
     
-    private var addReplenishmentSection: some View {
-        Section {
-            NavigationLink {
-                addReplenishmentView
-            } label: {
-                VStack(alignment: .leading) {
-                    Text("Напоминания")
-                    
-                    HStack(spacing: 5) {
-                        if addReplenishment {
-                            Text("Раз в")
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Text(addReplenishment ? Constants.timeEnumArray[timeIndex].key.lowercased() : "Никогда")
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.vertical, 5)
-                .onAppear {
-                    if target.dateNext != nil {
-                        addReplenishment = true
-                        timeIndex = Int(target.timeIndex)
-                        replenishment = target.replenishment as NSNumber
-                    }
-                }
-            }
-        }
-    }
+    //    private var addReplenishmentSection: some View {
+    //        Section {
+    //            NavigationLink {
+    //                addReplenishmentView
+    //            } label: {
+    //                VStack(alignment: .leading) {
+    //                    Text("Напоминания")
+    //
+    //                    HStack(spacing: 5) {
+    //                        if addReplenishment {
+    //                            Text("Раз в")
+    //                                .foregroundColor(.gray)
+    //                        }
+    //
+    //                        Text(addReplenishment ? Constants.timeEnumArray[timeIndex].key.lowercased() : "Никогда")
+    //                            .foregroundColor(.gray)
+    //                    }
+    //                }
+    //                .padding(.vertical, 5)
+    //                .onAppear {
+    //                    if target.dateNext != nil {
+    //                        addReplenishment = true
+    //                        timeIndex = Int(target.timeIndex)
+    //                        replenishment = target.replenishment as NSNumber
+    //                    }
+    //                }
+    //            }
+    //        }
+    //    }
     
-    private var addReplenishmentView: some View {
-        Form {
-            Section {
-                Toggle(isOn: $addReplenishment) {
-                    Text("Добавить напоминания")
-                }
-                .onChange(of: addReplenishment) { _ in
-                    if addReplenishment == false {
-                        DispatchQueue.main.async {
-                            timeIndex = 0
-                            replenishment = nil
-                            target.dateNext = nil
-                            
-                            PersistenceController.save(target: target, context: managedObjectContext)
-                        }
-                    }
-                }
-                .onAppear {
-                    NotificationHandler.requestPermission()
-                }
-                .onReceive(timer) { _ in
-                    Task {
-                        notify = try await vm.getPermissionState()
-                        print(notify)
-                        
-                        if !notify {
-                            addReplenishment = false
-                        }
-                    }
-                }
-                .disabled(!notify)
-            } footer: {
-                if !notify {
-                    Text("Для работы напоминаний требуется доступ к уведомлениям. \n 'Настройки' -> 'Target' -> 'Уведомления'")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            if addReplenishment, notify {
-                Section {
-                    Picker("", selection: $timeIndex) {
-                        ForEach(0..<Constants.timeEnumArray.count, id: \.self) { i in
-                            Text(Constants.timeEnumArray[i].key)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    
-                } header: {
-                    Text("Раз в")
-                }
-                .onChange(of: timeIndex) { _ in
-                    DispatchQueue.main.async {
-                        target.timeIndex = Int16(timeIndex)
-                        
-                        PersistenceController.save(target: target, context: managedObjectContext)
-                    }
-                }
-                .onChange(of: replenishment) { _ in
-                    DispatchQueue.main.async {
-                        if let replenishment = replenishment {
-                            target.replenishment = replenishment as! Int64
-                        }
-                        
-                        PersistenceController.save(target: target, context: managedObjectContext)
-                    }
-                }
-                
-                Section {
-                    FormatSumTextField(numberValue: $replenishment, placeholder: "Сколько хотите откладывать?", numberFormatter: Constants.formatter())
-                        .keyboardType(.numberPad)
-                }
-            }
-        }
-        .navigationTitle(Text("Напоминания"))
-    }
-    
+    //    private var addReplenishmentView: some View {
+    //        Form {
+    //            Section {
+    //                Toggle(isOn: $addReplenishment) {
+    //                    Text("Добавить напоминания")
+    //                }
+    //                .onChange(of: addReplenishment) { _ in
+    //                    if addReplenishment == false {
+    //                        DispatchQueue.main.async {
+    //                            timeIndex = 0
+    //                            replenishment = nil
+    //                            target.dateNext = nil
+    //
+    //                            PersistenceController.save(target: target, context: managedObjectContext)
+    //                        }
+    //                    }
+    //                }
+    //                .onAppear {
+    //                    NotificationHandler.requestPermission()
+    //                }
+    //                .disabled(!notify)
+    //            } footer: {
+    //                if !notify {
+    //                    Text("Для работы напоминаний требуется доступ к уведомлениям. \n 'Настройки' -> 'Target' -> 'Уведомления'")
+    //                        .foregroundColor(.red)
+    //                }
+    //            }
+    //
+    //            if addReplenishment, notify {
+    //                Section {
+    //                    Picker("", selection: $timeIndex) {
+    //                        ForEach(0..<Constants.timeEnumArray.count, id: \.self) { i in
+    //                            Text(Constants.timeEnumArray[i].key)
+    //                        }
+    //                    }
+    //                    .pickerStyle(.segmented)
+    //
+    //                } header: {
+    //                    Text("Раз в")
+    //                }
+    //                .onChange(of: timeIndex) { _ in
+    //                    DispatchQueue.main.async {
+    //                        target.timeIndex = Int16(timeIndex)
+    //
+    //                        PersistenceController.save(target: target, context: managedObjectContext)
+    //                    }
+    //                }
+    //                .onChange(of: replenishment) { _ in
+    //                    DispatchQueue.main.async {
+    //                        if let replenishment = replenishment {
+    //                            target.replenishment = replenishment as! Int64
+    //                        }
+    //
+    //                        PersistenceController.save(target: target, context: managedObjectContext)
+    //                    }
+    //                }
+    //
+    //                Section {
+    //                    FormatSumTextField(numberValue: $replenishment, placeholder: "Сколько хотите откладывать?", numberFormatter: Constants.formatter())
+    //                        .keyboardType(.numberPad)
+    //                }
+    //            }
+    //        }
+    //        .navigationTitle(Text("Напоминания"))
 }
+
 

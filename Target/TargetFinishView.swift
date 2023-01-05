@@ -15,17 +15,17 @@ struct TargetFinishView: View {
     @Environment(\.dismiss) var dismiss
     @Environment(\.managedObjectContext) var viewContext
     
-    @EnvironmentObject var vm: ViewModel
+    @EnvironmentObject var vm: StoreViewModel
     
     var body: some View {
         NavigationView {
             VStack(spacing: 15) {
                 
-                Text("Поздравляем!")
+                Text("finish1")
                     .bold()
                     .font(.largeTitle)
                 
-                Text("Ваша цель достигнута -")
+                Text("finish2")
                     .bold()
                     .font(.title2)
                     .frame(maxWidth: 350)
@@ -37,7 +37,7 @@ struct TargetFinishView: View {
                     .font(.largeTitle)
                     .gradientForeground(colors: [Constants.colorArray[Int(target.colorIndex)], .purple])
                 
-                DetailView(title1: "Накоплено:", subtitle1: Int(target.price), title2: "Потребовалось:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
+                DetailView(title1: "finish3", subtitle1: Int(target.price), title2: "finish4", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: Constants.colorArray[Int(target.colorIndex)], symbol: Constants.valueArray[Int(target.valueIndex)].symbol)
                 
                 Spacer()
                 
@@ -49,7 +49,7 @@ struct TargetFinishView: View {
             }
             .toolbar {
                 ToolbarItem {
-                    Button("Закрыть") {
+                    Button("close") {
                         if Constants.IDIOM == .phone {
                             dismiss()
                         } else {

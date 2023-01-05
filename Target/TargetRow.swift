@@ -15,8 +15,9 @@ struct TargetRow: View {
     @State private var txtPercent = 0
     
     @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.colorScheme) private var colorScheme
     
-    @EnvironmentObject var vm: ViewModel
+    @EnvironmentObject var vm: StoreViewModel
     
     var body: some View {
         label
@@ -25,6 +26,7 @@ struct TargetRow: View {
     private var label: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text(target.name ?? "")
+                .foregroundColor(colorScheme == .light ? .black : .white)
                 .bold()
                 .font(.title3)
             

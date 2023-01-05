@@ -1,0 +1,42 @@
+/* 
+  Localizable.strings
+  Target
+
+  Created by Fadey Notchenko on 05.01.2023.
+  
+*/
+"appname" = "My Piggy Bank";
+"placeholder" = "Select a target from the list";
+"pro1" = "Unlock all app features with PRO";
+"pro2" = "- Unlimited targets";
+"pro3" = "- Disable advertising";
+"buy" = "Buy";
+"restore" = "Restore purchases";
+"pro4" = "The full version was purchased once!";
+"protitle" = "PRO Version";
+"close" = "Close";
+"newtarget" = "New target";
+"nametarget" = "Name of your target";
+"value" = "Change currency";
+"new1" = "How much is your goal worth?";
+"new2" = "How much has already been accumulated?";
+"add" = "Add";
+"color" = "Progress Color";
+"lost" = "Remaining:";
+"lost2" = "Created by:";
+"history" = "History of operations";
+"edit" = "Change";
+"delete" = "Delete target";
+"save" = "Save";
+"finish1" = "Congratulations!";
+"finish2" = "Your goal has been reached -";
+"finish3" = "Accumulated:";
+"finish4" = "Required:";
+"action1" = "How much to get from the piggy bank?";
+"action2" = "How much to put in the piggy bank?";
+"max" = "Max:";
+"comment" = "Comment:";
+"date" = "Date:";
+"minus" = "Subtract";
+"plus" = "Add";
+"purchased" = "Purchased";

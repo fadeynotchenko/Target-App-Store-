@@ -9,7 +9,7 @@ import SwiftUI
 import StoreKit
 
 @MainActor
-class ViewModel: ObservableObject{
+class StoreViewModel: ObservableObject{
     @Published var id: UUID?
     
     @Published var products: [Product] = []
@@ -69,26 +69,7 @@ class ViewModel: ObservableObject{
         return false
     }
     
-    func getPermissionState() async throws -> Bool {
-        var ans = false
-        let current = UNUserNotificationCenter.current()
-        
-        let result = await current.notificationSettings()
-        switch result.authorizationStatus {
-        case .notDetermined:
-            break
-        case .denied:
-            ans = false
-        case .authorized:
-            ans = true
-        case .provisional:
-            ans = true
-        case .ephemeral:
-            break
-        @unknown default:
-            break
-        }
-        
-        return ans
+    func restore() async -> Bool {
+        ((try? await AppStore.sync()) != nil)
     }
 }

@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct TargetApp: App {
     
-    @StateObject private var vm = ViewModel()
+    @StateObject private var storeVM = StoreViewModel()
     
     private let persistenceController = PersistenceController.shared
 
@@ -18,12 +18,10 @@ struct TargetApp: App {
         WindowGroup {
             ContentView()
                 .environment(\.managedObjectContext, persistenceController.container.viewContext)
-                .environmentObject(vm)
+                .environmentObject(storeVM)
                 .onAppear(perform: UIApplication.shared.addTapGestureRecognizer)
-                .onAppear {
-                    Task {
-                        await vm.fetchProducts()
-                    }
+                .task {
+                    await storeVM.fetchProducts()
                 }
         }
     }

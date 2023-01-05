@@ -13,16 +13,19 @@ struct ContentView: View {
     
     @Environment(\.managedObjectContext) private var viewContext
     
-    @FetchRequest(sortDescriptors: [NSSortDescriptor(key: "date", ascending: true)]) var targets: FetchedResults<Target>
+    @FetchRequest(sortDescriptors: [NSSortDescriptor(key: "date", ascending: true)]) private var targets: FetchedResults<Target>
     
     @State private var showNewTargetView = false
     @State private var showProVersionView = false
     
     @State private var id: UUID?
     
-    @AppStorage("VN.Target.fullversion") var fullVersion = false
+    @AppStorage("VN.Target.fullversion") private var fullVersion = false
     
-    @EnvironmentObject var vm: ViewModel
+    @EnvironmentObject private var storeVM: StoreViewModel
+    
+    @State private var adViewControllerRepresentable = AdViewControllerRepresentable()
+    @State private var adCoordinator = AdCoordinator()
     
     var body: some View {
         GeometryReader { reader in
@@ -35,7 +38,8 @@ struct ContentView: View {
                     }
                 }
                 .listStyle(.plain)
-                .navigationTitle(Text("Моя Копилка"))
+                .accentColor(Color(UIColor.systemGroupedBackground))
+                .navigationTitle(Text("appname"))
                 .sheet(isPresented: $showNewTargetView) {
                     NewTargetView(showNewTargetView: $showNewTargetView)
                 }
@@ -47,9 +51,19 @@ struct ContentView: View {
                         showNewTargetViewButton
                     }
                     
+                    ToolbarItem(placement: .navigationBarLeading) {
+                        Button("PRO") {
+                            showProVersionView.toggle()
+                        }
+                    }
+                }
+                .onAppear {
+                    if storeVM.purchased.isEmpty {
+                        adCoordinator.loadAd()
+                    }
                 }
                 
-                Text("Выберите цель из списка")
+                Text("placeholder")
             }
             .currentNavigationStyle(width: reader.size.width)
         }
@@ -59,8 +73,8 @@ struct ContentView: View {
     private var targetList: some View {
         if Constants.IDIOM == .pad {
             ForEach(targets.filter({ $0.isFinished == false })) { target in
-                NavigationLink(tag: target.id ?? UUID(), selection: $vm.id) {
-                    TargetDetailView(target: target)
+                NavigationLink(tag: target.id ?? UUID(), selection: $storeVM.id) {
+                    TargetDetailView(adViewControllerRepresentable: $adViewControllerRepresentable, adCoordinator: $adCoordinator, target: target)
                 } label: {
                     TargetRow(target: target)
                 }
@@ -71,7 +85,7 @@ struct ContentView: View {
         } else {
             ForEach(targets.filter({ $0.isFinished == false })) { target in
                 NavigationLink {
-                    TargetDetailView(target: target)
+                    TargetDetailView(adViewControllerRepresentable: $adViewControllerRepresentable, adCoordinator: $adCoordinator, target: target)
                 } label: {
                     TargetRow(target: target)
                 }
@@ -84,7 +98,7 @@ struct ContentView: View {
     
     private var showNewTargetViewButton: some View {
         Button {
-            if targets.filter( { $0.isFinished == false }).count > 0 && vm.purchased.isEmpty {
+            if targets.filter( { $0.isFinished == false }).count > 0 && storeVM.purchased.isEmpty {
                 showProVersionView = true
             } else {
                 showNewTargetView = true
@@ -94,26 +108,26 @@ struct ContentView: View {
         }
     }
     
-    private var archiveButton: some View {
-        NavigationLink {
-            ArchiveTargetsView()
-        } label: {
-            Label {
-                HStack(spacing: 5) {
-                    Text("Архив")
-                        .bold()
-                    
-                    Text("(\(targets.filter( { $0.isFinished }).count))")
-                        .bold()
-                }
-            } icon: {
-                Image(systemName: "archivebox.fill")
-            }
-            .font(.title3)
-            .foregroundColor(.gray)
-            .padding(.vertical)
-        }
-    }
+//    private var archiveButton: some View {
+//        NavigationLink {
+//            ArchiveTargetsView()
+//        } label: {
+//            Label {
+//                HStack(spacing: 5) {
+//                    Text("Архив")
+//                        .bold()
+//
+//                    Text("(\(targets.filter( { $0.isFinished }).count))")
+//                        .bold()
+//                }
+//            } icon: {
+//                Image(systemName: "archivebox.fill")
+//            }
+//            .font(.title3)
+//            .foregroundColor(.gray)
+//            .padding(.vertical)
+//        }
+//    }
     
     private func deleteButton(_ target: Target) -> some View {
         Button(role: .destructive) {
@@ -133,23 +147,39 @@ struct ProVersion: View {
     @Binding var showProVersionView: Bool
     @Binding var showNewTargetView: Bool
     
-    @EnvironmentObject var vm: ViewModel
-    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var storeVM: StoreViewModel
+    @Environment(\.dismiss) private var dismiss
     
     var body: some View {
         NavigationView {
             VStack {
-                Text("Для создания больше одной цели - требуется доступ к полной версии приложения")
-                    .foregroundColor(.gray)
+                Image(systemName: "star.fill")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                    .foregroundColor(.yellow)
+                
+                
+                Text("pro1")
+                    .bold()
                     .font(.headline)
                     .padding()
                     .multilineTextAlignment(.center)
+                
+                VStack(alignment: .leading, spacing: 15) {
+                    Text("pro2")
+                        .bold()
+                    
+                    Text("pro3")
+                        .bold()
+                }
+                .padding(.horizontal)
                 
                 Spacer()
                 
                 Button {
                     Task {
-                        let bool = await vm.purchase()
+                        let bool = await storeVM.purchase()
                         
                         if bool {
                             dismiss()
@@ -161,10 +191,10 @@ struct ProVersion: View {
                     }
                 } label: {
                     HStack(spacing: 5) {
-                        Text("Купить")
+                        Text(storeVM.purchased.isEmpty ? "buy" : "purchased")
                             .bold()
                         
-                        if let product = vm.products.first {
+                        if let product = storeVM.products.first {
                             Text(product.displayPrice)
                                 .bold()
                         }
@@ -173,16 +203,23 @@ struct ProVersion: View {
                 .padding()
                 .background(Color("Color"))
                 .cornerRadius(15)
+                .disabled(!storeVM.purchased.isEmpty)
                 
-                Text("Покупка полной версии осуществляется один раз!")
+                Button("restore") {
+                    Task {
+                        let _ = await storeVM.restore()
+                    }
+                }
+                
+                Text("pro4")
                     .padding()
                     .multilineTextAlignment(.center)
                     .foregroundColor(.gray)
             }
-            .navigationTitle(Text("PRO Версия"))
+            .navigationTitle(Text("protitle"))
             .toolbar {
                 ToolbarItem {
-                    Button("Закрыть") {
+                    Button("close") {
                         showProVersionView = false
                     }
                 }

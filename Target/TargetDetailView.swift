@@ -10,13 +10,15 @@ import UserNotifications
 
 struct TargetDetailView: View {
     
+    @Binding var adViewControllerRepresentable: AdViewControllerRepresentable
+    @Binding var adCoordinator: AdCoordinator
     @ObservedObject var target: Target
     
-    @Environment(\.colorScheme) var colorScheme
-    @Environment(\.managedObjectContext) var viewContext
-    @Environment(\.presentationMode) var presentation
+    @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.managedObjectContext) private var viewContext
+    @Environment(\.presentationMode) private var presentation
     
-    @EnvironmentObject var vm: ViewModel
+    @EnvironmentObject private var storeVM: StoreViewModel
     
     @State private var showActionView = false
     @State private var showEditView = false
@@ -49,12 +51,12 @@ struct TargetDetailView: View {
     }
     
     private var showPlaceholder: Bool {
-        Constants.IDIOM == .pad && vm.id == nil
+        Constants.IDIOM == .pad && storeVM.id == nil
     }
     
     var body: some View {
         if showPlaceholder {
-            Text("Выберите цель из списка")
+            Text("placeholder")
         } else {
             GeometryReader { reader in
                 ScrollView(showsIndicators: false) {
@@ -67,11 +69,11 @@ struct TargetDetailView: View {
                             .font(.title2)
                             .padding(.top)
                         
-                        DetailView(title1: "Осталось:", subtitle1: Int(target.price - target.current), title2: "Прошло:", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
+                        DetailView(title1: "lost", subtitle1: Int(target.price - target.current), title2: "lost2", subtitle2: Constants.globalFunc.calculateDate(date: target.date ?? Date()), color: color, symbol: symbol)
                         
-                        remindersView
+//                        remindersView
                         
-                        Text("История операций (\(target.actionArrayByDate.count))")
+                        Text("\(NSLocalizedString("history", comment: "")) (\(target.actionArrayByDate.count))")
                             .bold()
                             .font(.title3)
                         
@@ -79,6 +81,17 @@ struct TargetDetailView: View {
                             ForEach(target.actionArrayByDate) { action in
                                 actionRow(action: action)
                             }
+                        }
+                    }
+                    .overlay {
+                        adViewControllerRepresentable
+                            .frame(width: .zero, height: .zero)
+                    }
+                }
+                .onAppear {
+                    if storeVM.purchased.isEmpty {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            adCoordinator.presentAd(from: adViewControllerRepresentable.viewController)
                         }
                     }
                 }
@@ -95,7 +108,7 @@ struct TargetDetailView: View {
                 .toolbar {
                     ToolbarItem {
                         if !showPlaceholder {
-                            Button("Изменить") {
+                            Button("edit") {
                                 showEditView = true
                             }
                             .disabled(target.price == target.current)
@@ -141,66 +154,66 @@ struct TargetDetailView: View {
         .cornerRadius(15)
     }
     
-    @ViewBuilder
-    private var remindersView: some View {
-        if let next = target.dateNext {
-            VStack(spacing: 10) {
-                Text("Следующие запланированное пополнение копилки:")
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                
-                Text(next, format: .dateTime.year().month().day())
-                    .bold()
-                    .font(.title3)
-                    .gradientForeground(colors: [color, .purple])
-                
-                Text("Сумма пополнения:")
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                    .padding(.top)
-                
-                Text("\(target.replenishment) \(symbol)")
-                    .bold()
-                    .font(.title3)
-                    .gradientForeground(colors: [color, .purple])
-                
-                Button {
-                    let action = Action(context: viewContext)
-                    action.id = UUID()
-                    action.date = Date()
-                    
-                    if target.current + target.replenishment > target.price {
-                        action.value = target.price - target.current
-                        target.current = target.price
-                    } else {
-                        target.current += target.replenishment
-                        action.value = target.replenishment
-                    }
-                    
-                    target.addToAction(action)
-                    
-                    NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
-                    
-                    NotificationHandler.sendNotification(target, context: viewContext)
-                    
-                } label: {
-                    Text("Пополнить")
-                        .bold()
-                    
-                }
-                .disabled(Date() < target.dateNext ?? Date())
-                .padding()
-                .frame(width: 300)
-                .background(colorScheme == .light ? .white : .black)
-                .cornerRadius(15)
-                .padding(.top)
-            }
-            .padding()
-            .frame(width: 330)
-            .background(Color("Color"))
-            .cornerRadius(15)
-        }
-    }
+//    @ViewBuilder
+//    private var remindersView: some View {
+//        if let next = target.dateNext {
+//            VStack(spacing: 10) {
+//                Text("Следующие запланированное пополнение копилки:")
+//                    .foregroundColor(.gray)
+//                    .multilineTextAlignment(.center)
+//
+//                Text(next, format: .dateTime.year().month().day())
+//                    .bold()
+//                    .font(.title3)
+//                    .gradientForeground(colors: [color, .purple])
+//
+//                Text("Сумма пополнения:")
+//                    .foregroundColor(.gray)
+//                    .multilineTextAlignment(.center)
+//                    .padding(.top)
+//
+//                Text("\(target.replenishment) \(symbol)")
+//                    .bold()
+//                    .font(.title3)
+//                    .gradientForeground(colors: [color, .purple])
+//
+//                Button {
+//                    let action = Action(context: viewContext)
+//                    action.id = UUID()
+//                    action.date = Date()
+//
+//                    if target.current + target.replenishment > target.price {
+//                        action.value = target.price - target.current
+//                        target.current = target.price
+//                    } else {
+//                        target.current += target.replenishment
+//                        action.value = target.replenishment
+//                    }
+//
+//                    target.addToAction(action)
+//
+//                    NotificationHandler.deleteNotification(by: target.id?.uuidString ?? UUID().uuidString)
+//
+//                    NotificationHandler.sendNotification(target, context: viewContext)
+//
+//                } label: {
+//                    Text("Пополнить")
+//                        .bold()
+//
+//                }
+//                .disabled(Date() < target.dateNext ?? Date())
+//                .padding()
+//                .frame(width: 300)
+//                .background(colorScheme == .light ? .white : .black)
+//                .cornerRadius(15)
+//                .padding(.top)
+//            }
+//            .padding()
+//            .frame(width: 330)
+//            .background(Color("Color"))
+//            .cornerRadius(15)
+//        }
+//    }
     
     private func circleProgressWithActionButtons(_ reader: GeometryProxy) -> some View {
         HStack(spacing: 0) {
@@ -281,7 +294,7 @@ struct TargetDetailView: View {
     private func calculateProgress(_ price: Int64, _ current: Int64) {
         guard price != 0 else { return }
         
-        withAnimation(.easeInOut(duration: 2.0)) {
+        withAnimation(.easeInOut(duration: 1.0)) {
             progress = CGFloat(current * 100 / price) / 100
         }
         

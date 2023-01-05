@@ -26,7 +26,7 @@ struct TargetActionView: View {
         NavigationView {
             Form {
                 Section {
-                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? "Сколько достать из копилки?" : "Сколько положить в копилку?", numberFormatter: Constants.formatter())
+                    FormatSumTextField(numberValue: selection == 0 ? $minusCurrent : $plusCurrent, placeholder: selection == 0 ? NSLocalizedString("action1", comment: "") : NSLocalizedString("action2", comment: ""), numberFormatter: Constants.formatter())
                         .keyboardType(.numberPad)
                         .onChange(of: minusCurrent, perform: { _ in
                             if Int64(truncating: minusCurrent ?? 0) > target.current {
@@ -40,18 +40,18 @@ struct TargetActionView: View {
                         })
                 } footer: {
                     if selection == 0 {
-                        Text("Максимум: \(target.current)")
+                        Text("\(NSLocalizedString("max", comment: "")) \(target.current)")
                     } else {
-                        Text("Максимум: \(target.price - target.current)")
+                        Text("\(NSLocalizedString("max", comment: "")) \(target.price - target.current)")
                     }
                 }
                 
                 Section {
-                    TextField("Комментарий:", text: $comment)
+                    TextField("comment", text: $comment)
                 }
                 
                 Section {
-                    Toggle("Дата:", isOn: $dateIsOn)
+                    Toggle("date", isOn: $dateIsOn)
                     
                     if dateIsOn {
                         DatePicker("", selection: $date, displayedComponents: .date)
@@ -62,11 +62,11 @@ struct TargetActionView: View {
                 
                 
             }
-            .navigationTitle(selection == 0 ? "Вычесть" : "Добавить")
+            .navigationTitle(selection == 0 ? "minus" : "plus")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Закрыть") {
+                    Button("close") {
                         showActionView.toggle()
                     }
                 }
@@ -115,7 +115,7 @@ struct TargetActionView: View {
             
             
         } label: {
-            Text("Сохранить")
+            Text("save")
         }
         .frame(maxWidth: .infinity, alignment: .center)
         .disabled(selection == 0 && minusCurrent == nil ? true : false)

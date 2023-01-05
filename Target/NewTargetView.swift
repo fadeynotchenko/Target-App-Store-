@@ -29,7 +29,7 @@ struct NewTargetView: View {
     
     @State private var notify = true
     
-    @EnvironmentObject var vm: ViewModel
+    @EnvironmentObject var vm: StoreViewModel
     
     private var region: String {
         String(Locale.preferredLanguages[0].prefix(2))
@@ -39,9 +39,6 @@ struct NewTargetView: View {
         Constants.valueArray[Int(valueIndex)]
     }
     
-    //timer need for call check notification permission every second
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-    
     var body: some View {
         NavigationView {
             Form {
@@ -49,15 +46,15 @@ struct NewTargetView: View {
                 
                 priceSection
                 
-                addReplenishmentSection
+                //addReplenishmentSection
                 
                 LazyColorHStack(tagIndex: $colorIndex)
             }
-            .navigationTitle(Text("Новая цель"))
+            .navigationTitle(Text("newtarget"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Закрыть") {
+                    Button("close") {
                         showNewTargetView = false
                     }
                 }
@@ -74,7 +71,7 @@ struct NewTargetView: View {
     
     private var nameSection: some View {
         Section {
-            TextField("Название Вашей цели", text: $name)
+            TextField("nametarget", text: $name)
                 .onChange(of: name) { _ in
                     if name.count > 20 {
                         name = String(name.prefix(20))
@@ -85,7 +82,7 @@ struct NewTargetView: View {
     
     private var priceSection: some View {
         Section {
-            Picker("Изменить валюту", selection: $valueIndex) {
+            Picker("value", selection: $valueIndex) {
                 ForEach(0..<Constants.valueArray.count, id: \.self) { i in
                     Text(Constants.valueArray[i].rawValue)
                 }
@@ -96,7 +93,7 @@ struct NewTargetView: View {
                 }
             }
             
-            FormatSumTextField(numberValue: $price, placeholder: "Cколько стоит Ваша цель?", numberFormatter: Constants.formatter())
+            FormatSumTextField(numberValue: $price, placeholder: NSLocalizedString("new1", comment: ""), numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: price, perform: { _ in
                     if Int(truncating: price ?? 0) > Constants.MAX {
@@ -104,7 +101,7 @@ struct NewTargetView: View {
                     }
                 })
             
-            FormatSumTextField(numberValue: $current, placeholder: "Сколько уже накоплено?", numberFormatter: Constants.formatter())
+            FormatSumTextField(numberValue: $current, placeholder: NSLocalizedString("new2", comment: ""), numberFormatter: Constants.formatter())
                 .keyboardType(.numberPad)
                 .onChange(of: current, perform: { _ in
                     if Int(truncating: current ?? 0) > Int(truncating: price ?? 0) {
@@ -116,7 +113,7 @@ struct NewTargetView: View {
     }
     
     private var addGoalButton: some View {
-        Button("Добавить") {
+        Button("add") {
             showNewTargetView.toggle()
             
             let target = Target(context: managedObjectContext)
@@ -141,76 +138,67 @@ struct NewTargetView: View {
         .disabled(price == nil)
     }
     
-    private var addReplenishmentSection: some View {
-        Section {
-            NavigationLink {
-                addReplenishmentView
-            } label: {
-                VStack(alignment: .leading) {
-                    Text("Напоминания")
-                    
-                    HStack(spacing: 5) {
-                        if addReplenishment {
-                            Text("Раз в")
-                                .foregroundColor(.gray)
-                        }
-                        
-                        Text(addReplenishment ? Constants.timeEnumArray[timeIndex].key.lowercased() : "Никогда")
-                            .foregroundColor(.gray)
-                    }
-                }
-                .padding(.vertical, 5)
-            }
-        }
-    }
+//    private var addReplenishmentSection: some View {
+//        Section {
+//            NavigationLink {
+//                addReplenishmentView
+//            } label: {
+//                VStack(alignment: .leading) {
+//                    Text("Напоминания")
+//                    
+//                    HStack(spacing: 5) {
+//                        if addReplenishment {
+//                            Text("Раз в")
+//                                .foregroundColor(.gray)
+//                        }
+//                        
+//                        Text(addReplenishment ? Constants.timeEnumArray[timeIndex].key.lowercased() : "Никогда")
+//                            .foregroundColor(.gray)
+//                    }
+//                }
+//                .padding(.vertical, 5)
+//            }
+//        }
+//    }
     
-    private var addReplenishmentView: some View {
-        Form {
-            Section {
-                Toggle(isOn: $addReplenishment) {
-                    Text("Добавить напоминания")
-                }
-                .onAppear {
-                    NotificationHandler.requestPermission()
-                }
-                .onReceive(timer) { _ in
-                    Task {
-                        notify = try await vm.getPermissionState()
-                        
-                        if !notify {
-                            addReplenishment = false
-                        }
-                    }
-                }
-                .disabled(!notify)
-            } footer: {
-                if !notify {
-                    Text("Для работы напоминаний требуется доступ к уведомлениям. \n 'Настройки' -> 'Target' -> 'Уведомления'")
-                        .foregroundColor(.red)
-                }
-            }
-            
-            if addReplenishment, notify {
-                Section {
-                    Picker("", selection: $timeIndex) {
-                        ForEach(0..<Constants.timeEnumArray.count, id: \.self) { i in
-                            Text(Constants.timeEnumArray[i].key)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                    
-                } header: {
-                    Text("Раз в")
-                }
-                
-                Section {
-                    FormatSumTextField(numberValue: $replenishment, placeholder: "Сколько хотите откладывать?", numberFormatter: Constants.formatter())
-                        .keyboardType(.numberPad)
-                }
-            }
-        }
-        .navigationTitle(Text("Напоминания"))
-    }
+//    private var addReplenishmentView: some View {
+//        Form {
+//            Section {
+//                Toggle(isOn: $addReplenishment) {
+//                    Text("Добавить напоминания")
+//                }
+//                .onAppear {
+//                    NotificationHandler.requestPermission()
+//                }
+//                .disabled(!notify)
+//            } footer: {
+//                if !notify {
+//                    Text("Для работы напоминаний требуется доступ к уведомлениям. \n 'Настройки' -> 'Target' -> 'Уведомления'")
+//                        .foregroundColor(.red)
+//                }
+//            }
+//
+//            if addReplenishment, notify {
+//                Section {
+//                    Picker("", selection: $timeIndex) {
+//                        ForEach(0..<Constants.timeEnumArray.count, id: \.self) { i in
+//                            Text(Constants.timeEnumArray[i].key)
+//                        }
+//                    }
+//                    .pickerStyle(.segmented)
+//
+//                } header: {
+//                    Text("Раз в")
+//                }
+//
+//                Section {
+//                    FormatSumTextField(numberValue: $replenishment, placeholder: "Сколько хотите откладывать?", numberFormatter: Constants.formatter())
+//                        .keyboardType(.numberPad)
+//                }
+//            }
+//        }
+//        .navigationTitle(Text("Напоминания"))
+//    }
 }
 
 struct LazyColorHStack: View {
@@ -241,7 +229,7 @@ struct LazyColorHStack: View {
                 }
             }
         } footer: {
-            Text("Цвет прогресса")
+            Text("color")
         }
     }
 }
